@@ -15,3 +15,5 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Reusable accessible form, navigation, dialog, table, feedback, and status components.
 - Complete account inventory creation, editing, archival, filtering, sorting, pagination, and detail history.
 - Available, listed, and sold categories with persistent grid/table preferences and sold-record protections.
+- Independent multi-marketplace listings with custom normalized marketplace names and duplicate warnings.
+- Listing search, filtering, pagination, editing, cancellation, and live profit, margin, and ROI estimates.

@@ -1,6 +1,7 @@
 "use client";
 
-import { CalendarDays, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Eye, MoreHorizontal, Pencil, Store, Trash2 } from "lucide-react";
 import { AccountThumbnail } from "@/components/shared/account-thumbnail";
 import { Money } from "@/components/shared/money";
 import { AccountStatusBadge } from "@/components/shared/status-badge";
@@ -90,6 +91,14 @@ export function AccountCard({
                   <Eye />
                   View details
                 </DropdownMenuItem>
+                {!sold ? (
+                  <DropdownMenuItem asChild>
+                    <Link href={`/listings?create=1&account=${account.id}`}>
+                      <Store />
+                      Create listing
+                    </Link>
+                  </DropdownMenuItem>
+                ) : null}
                 <DropdownMenuItem disabled={sold} onSelect={onEdit}>
                   <Pencil />
                   Edit account

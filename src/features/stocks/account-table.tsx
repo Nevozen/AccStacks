@@ -1,6 +1,7 @@
 "use client";
 
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Eye, Pencil, Store, Trash2 } from "lucide-react";
 import { Money } from "@/components/shared/money";
 import { AccountStatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,14 @@ export function AccountTable({
                       <Eye />
                       <span className="sr-only">View {account.accountName}</span>
                     </Button>
+                    {!sold ? (
+                      <Button variant="ghost" size="icon-sm" asChild>
+                        <Link href={`/listings?create=1&account=${account.id}`}>
+                          <Store />
+                          <span className="sr-only">Create listing for {account.accountName}</span>
+                        </Link>
+                      </Button>
+                    ) : null}
                     <Button
                       variant="ghost"
                       size="icon-sm"
