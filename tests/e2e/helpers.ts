@@ -3,7 +3,7 @@ import argon2 from "argon2";
 import { expect, type Page } from "@playwright/test";
 import { testDb } from "../integration/client";
 
-export async function createE2eOwner() {
+export async function createE2eOwner(options?: { capital?: bigint | null }) {
   const suffix = randomUUID();
   const email = `e2e-${suffix}@example.invalid`;
   const password = `e2e-password-${suffix}`;
@@ -17,7 +17,9 @@ export async function createE2eOwner() {
         timeCost: 2,
         parallelism: 1,
       }),
-      settings: { create: {} },
+      settings: {
+        create: { capital: options?.capital === undefined ? 1_000_000n : options.capital },
+      },
     },
   });
   return { user, email, password };

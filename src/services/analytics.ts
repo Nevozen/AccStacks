@@ -1,7 +1,12 @@
 import { Prisma } from "@/generated/prisma/client";
 import { DateTime } from "luxon";
-import { resolveDateRange } from "@/lib/dates";
-import { calculateAverage, calculatePercentage } from "@/lib/finance";
+import { resolveDateRange, resolvePreviousDateRange } from "@/lib/dates";
+import {
+  calculateAverage,
+  calculateCapitalPosition,
+  calculateChange,
+  calculatePercentage,
+} from "@/lib/finance";
 import { overviewQuerySchema, type OverviewQuery } from "@/schemas/overview";
 import { db } from "@/server/db";
 
@@ -22,6 +27,11 @@ export async function getAnalytics(
   const range = resolveDateRange({ ...parsed, timezone, now });
   const where = salesWhere(ownerId, range.from, range.toExclusive);
   const salesFrom = Prisma.sql`FROM "Sale" s JOIN "Account" a ON a.id = s."accountId" WHERE ${where}`;
+  const previousRange = resolvePreviousDateRange({ ...parsed, timezone, now });
+  const previousSalesFrom = previousRange.label
+    ? Prisma.sql`FROM "Sale" s JOIN "Account" a ON a.id = s."accountId" WHERE ${salesWhere(ownerId, previousRange.from, previousRange.toExclusive)}`
+    : null;
+  const allTimeSalesFrom = Prisma.sql`FROM "Sale" s JOIN "Account" a ON a.id = s."accountId" WHERE ${salesWhere(ownerId, null, null)}`;
   const saleDateWhere: Prisma.SaleWhereInput = {
     account: { ownerId },
     ...(range.from || range.toExclusive
@@ -140,10 +150,36 @@ export async function getAnalytics(
     }),
   ]);
 
+  const [previousFinancialRows, allTimeFinancialRows, settings] = await Promise.all([
+    previousSalesFrom
+      ? db.$queryRaw<{ sales: bigint; revenue: bigint; cogs: bigint; expenses: bigint }[]>(
+          Prisma.sql`SELECT COUNT(*)::bigint AS sales,
+            COALESCE(SUM(s."sellingPrice"), 0)::bigint AS revenue,
+            COALESCE(SUM(s."purchasePrice"), 0)::bigint AS cogs,
+            COALESCE(SUM(s."totalExpenses"), 0)::bigint AS expenses ${previousSalesFrom}`,
+        )
+      : Promise.resolve([]),
+    db.$queryRaw<{ revenue: bigint; cogs: bigint; expenses: bigint }[]>(
+      Prisma.sql`SELECT COALESCE(SUM(s."sellingPrice"), 0)::bigint AS revenue,
+        COALESCE(SUM(s."purchasePrice"), 0)::bigint AS cogs,
+        COALESCE(SUM(s."totalExpenses"), 0)::bigint AS expenses ${allTimeSalesFrom}`,
+    ),
+    db.userSettings.findUnique({ where: { userId: ownerId }, select: { capital: true } }),
+  ]);
+
   const inventoryValues = inventoryRows[0] ?? { inventoryValue: 0n, unrealizedProfit: 0n };
   const financial = financialRows[0] ?? { sales: 0n, revenue: 0n, cogs: 0n, expenses: 0n };
+  const previous = previousFinancialRows[0] ?? { sales: 0n, revenue: 0n, cogs: 0n, expenses: 0n };
+  const allTime = allTimeFinancialRows[0] ?? { revenue: 0n, cogs: 0n, expenses: 0n };
   const completedSales = Number(financial.sales);
   const netProfit = financial.revenue - financial.cogs - financial.expenses;
+  const previousNetProfit = previous.revenue - previous.cogs - previous.expenses;
+  const retainedNetProfit = allTime.revenue - allTime.cogs - allTime.expenses;
+  const capitalPosition = calculateCapitalPosition({
+    capital: settings?.capital ?? 0n,
+    retainedNetProfit,
+    inventoryValue: inventoryValues.inventoryValue,
+  });
 
   return {
     range,
@@ -167,6 +203,17 @@ export async function getAnalytics(
       returnOnInvestment: calculatePercentage(netProfit, financial.cogs),
       averageProfitPerSale: calculateAverage(netProfit, completedSales),
       averageSellingPrice: calculateAverage(financial.revenue, completedSales),
+    },
+    comparison: {
+      label: previousRange.label,
+      revenue: calculateChange(financial.revenue, previous.revenue),
+      netProfit: calculateChange(netProfit, previousNetProfit),
+      sales: calculateChange(financial.sales, previous.sales),
+    },
+    capitalPosition: {
+      capital: settings?.capital ?? 0n,
+      retainedNetProfit,
+      ...capitalPosition,
     },
     trends: trendRows,
     monthlySales: monthlyRows,

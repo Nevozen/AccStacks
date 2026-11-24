@@ -35,6 +35,7 @@ export default async function SettingsPage() {
           timezone: settings.timezone,
           currency: "IDR",
           preferredStockView: settings.preferredStockView,
+          capital: settings.capital?.toString() ?? "0",
         }}
       />
     </div>

@@ -30,3 +30,6 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Expanded popular-game autocomplete with free-text selection and no dropdown-only input.
 - Stacked account-level listing cards with a complete independent-marketplace detail sheet.
 - Private local thumbnail uploads with type validation, ownership-checked serving, and persistent storage.
+- Previous-period revenue, net-profit, and sale-count comparison indicators.
+- Required owner capital with retained-profit, cash, asset, and estimated-equity reporting.
+- Production-server Playwright execution for stable end-to-end verification.

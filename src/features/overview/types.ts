@@ -17,6 +17,11 @@ export type PerformancePoint = {
   netProfitText: string;
 };
 
+export type ChangeDto = {
+  value: string | null;
+  direction: "up" | "down" | "steady" | "new";
+};
+
 export type OverviewDto = {
   query: { range: string; from: string; to: string };
   inventory: {
@@ -38,6 +43,18 @@ export type OverviewDto = {
     returnOnInvestment: string | null;
     averageProfitPerSale: string | null;
     averageSellingPrice: string | null;
+  };
+  comparison: {
+    label: string | null;
+    revenue: ChangeDto;
+    netProfit: ChangeDto;
+    sales: ChangeDto;
+  };
+  capitalPosition: {
+    capital: string;
+    retainedNetProfit: string;
+    estimatedEquity: string;
+    estimatedCash: string;
   };
   trends: ChartPoint[];
   monthlySales: ChartPoint[];

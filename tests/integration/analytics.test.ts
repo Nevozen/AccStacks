@@ -4,6 +4,7 @@ import { createAccount } from "@/services/accounts";
 import { getAnalytics } from "@/services/analytics";
 import { createListing } from "@/services/listings";
 import { confirmSale } from "@/services/sales";
+import { updateCapital } from "@/services/settings";
 import { db } from "@/server/db";
 import { createTestUser, testDb } from "./client";
 
@@ -64,6 +65,25 @@ async function createAnalyticsFixture(ownerId: string) {
   });
 }
 
+async function createPreviousSale(ownerId: string) {
+  const account = await createStock(ownerId, "Previous period sale", "300000");
+  const listing = await createListing(ownerId, {
+    accountId: account.id,
+    marketplace: "Instagram",
+    listingPrice: "500000",
+    listingUrl: "",
+    listedAt: "2026-10-20",
+    notes: "",
+  });
+  await confirmSale(ownerId, {
+    listingId: listing.id,
+    sellingPrice: "500000",
+    soldAt: "2026-10-24",
+    notes: "",
+    expenses: [],
+  });
+}
+
 afterAll(async () => {
   await Promise.all([testDb.$disconnect(), db.$disconnect()]);
 });
@@ -107,6 +127,29 @@ describe("business analytics", () => {
     });
     expect(result.marketplacePerformance[0]).toMatchObject({ name: "Itemku", revenue: 800_000n });
     expect(result.recentSales).toHaveLength(1);
+  });
+
+  it("compares the previous period and calculates capital, cash, and equity", async () => {
+    const user = await createTestUser();
+    await createAnalyticsFixture(user.id);
+    await createPreviousSale(user.id);
+    await updateCapital(user.id, "1000000");
+
+    const result = await getAnalytics(
+      user.id,
+      { range: "custom", from: "2026-11-01", to: "2026-11-30" },
+      "Asia/Jakarta",
+      now,
+    );
+    expect(result.comparison.revenue).toEqual({ value: "+60.00%", direction: "up" });
+    expect(result.comparison.netProfit).toEqual({ value: "+37.50%", direction: "up" });
+    expect(result.comparison.sales.direction).toBe("steady");
+    expect(result.capitalPosition).toEqual({
+      capital: 1_000_000n,
+      retainedNetProfit: 475_000n,
+      estimatedEquity: 1_475_000n,
+      estimatedCash: 1_175_000n,
+    });
   });
 
   it("applies reporting periods only to sales and isolates owners", async () => {

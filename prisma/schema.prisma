@@ -45,6 +45,7 @@ model UserSettings {
   currency           String    @default("IDR") @db.Char(3)
   timezone           String    @default("Asia/Jakarta")
   preferredStockView StockView @default(GRID)
+  capital            BigInt?
   createdAt          DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime  @updatedAt @db.Timestamptz(6)
 }

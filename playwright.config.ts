@@ -22,7 +22,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "pnpm dev --port 3100",
+    command: "pnpm build && node scripts/prepare-standalone.mjs && node .next/standalone/server.js",
     url: `${baseURL}/login`,
     reuseExistingServer: false,
     timeout: 120_000,
@@ -30,6 +30,8 @@ export default defineConfig({
       DATABASE_URL: testDatabaseUrl,
       AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-only-auth-secret-not-for-production-use",
       AUTH_URL: baseURL,
+      PORT: "3100",
+      HOSTNAME: "localhost",
     },
   },
 });

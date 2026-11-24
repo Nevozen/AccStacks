@@ -42,6 +42,21 @@ Deleting a listing means `CANCELLED` in AccStacks, not deleting the account or i
 
 Closing or cancelling a listing never removes an advertisement from an external marketplace. Users must remove those advertisements manually.
 
+## Capital, assets, cash, and equity
+
+Owner capital is required once and may be zero. `null` means capital has not been entered; zero is a valid intentional value.
+
+```text
+Retained Net Profit = All-time completed-sale net profit
+Estimated Equity = Capital + Retained Net Profit
+Estimated Cash = Estimated Equity - Current Inventory Value
+Estimated Assets = Estimated Cash + Current Inventory Value
+```
+
+Inventory is an asset, not equity by itself. The simplified model assumes no liabilities, owner withdrawals, or non-cash adjustments. Estimated assets and equity therefore reconcile to the same total, while the cash and inventory breakdown explains where that value sits. Capital and retained profit are not affected by the selected sales reporting period.
+
+Revenue, net profit, and sale-count indicators compare the current reporting period with the immediately preceding equivalent period. Last 7/30 days and custom ranges use the same duration; calendar months/years use the previous calendar month/year. All-time reports do not show a comparison. A zero previous value displays `New` rather than an infinite percentage.
+
 ## Dates
 
 Timestamps are stored in UTC. Date-only inputs and reporting boundaries are interpreted in the configured user timezone, default `Asia/Jakarta`. The current reporting period applies only to sales-related metrics and charts.

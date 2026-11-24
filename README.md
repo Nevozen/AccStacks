@@ -31,6 +31,8 @@ A centralized dashboard for monitoring inventory and business performance.
 - Total, available, listed, and sold accounts.
 - Active marketplace listings and current inventory value.
 - Total revenue, cost of goods sold, additional expenses, and net profit.
+- Previous-period revenue, profit, and sale-count comparison indicators.
+- Required owner capital with estimated cash, assets, retained profit, and equity reporting.
 - Profit margin and sales performance over time.
 - Recent transactions and performance by game and marketplace.
 - Date range filters for financial analytics.
@@ -39,7 +41,9 @@ A centralized dashboard for monitoring inventory and business performance.
 
 Manage purchased game accounts throughout their entire lifecycle.
 
-- Add accounts with game name, account name, description, and purchase price.
+- Add accounts with game name, account name, description, purchase price, and private local thumbnails.
+- Use expanded popular-game autocomplete or enter a custom game.
+- Automatically allocate collision-safe game-prefixed account IDs and linked listing IDs.
 - Organize inventory into All Accounts, Available, Listed, and Sold Accounts.
 - Search, filter, sort, and edit account records.
 - View purchase information and associated marketplace listings.
@@ -53,7 +57,8 @@ Manage listings across multiple external marketplaces from one workspace.
 - Create listings directly from existing stock accounts.
 - Enter custom marketplace names, such as Instagram, Facebook, Shopee, or Itemku.
 - Set individual listing prices and optionally attach listing URLs.
-- List the same account on multiple marketplaces simultaneously.
+- List the same account on multiple marketplaces simultaneously without duplicate inventory cards.
+- Open a stacked account card to manage every independent marketplace listing and linked listing ID.
 - View estimated profit before a sale.
 - Edit, delete, or mark active listings as sold.
 

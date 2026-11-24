@@ -88,6 +88,13 @@ export function toOverviewDto(
       averageProfitPerSale: data.financial.averageProfitPerSale?.toString() ?? null,
       averageSellingPrice: data.financial.averageSellingPrice?.toString() ?? null,
     },
+    comparison: data.comparison,
+    capitalPosition: {
+      capital: data.capitalPosition.capital.toString(),
+      retainedNetProfit: data.capitalPosition.retainedNetProfit.toString(),
+      estimatedEquity: data.capitalPosition.estimatedEquity.toString(),
+      estimatedCash: data.capitalPosition.estimatedCash.toString(),
+    },
     trends: fillTrend(data, timezone),
     monthlySales: mapPoints(data.monthlySales),
     gamePerformance: mapPerformance(data.gamePerformance),

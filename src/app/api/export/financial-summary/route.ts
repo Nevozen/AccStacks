@@ -43,6 +43,10 @@ export async function GET(request: NextRequest) {
     ["Return on Investment (%)", analytics.financial.returnOnInvestment ?? "N/A", scope],
     ["Average Profit per Sale (IDR)", analytics.financial.averageProfitPerSale ?? "N/A", scope],
     ["Average Selling Price (IDR)", analytics.financial.averageSellingPrice ?? "N/A", scope],
+    ["Owner Capital (IDR)", analytics.capitalPosition.capital, "Capital and equity"],
+    ["Retained Net Profit (IDR)", analytics.capitalPosition.retainedNetProfit, "All time"],
+    ["Estimated Cash (IDR)", analytics.capitalPosition.estimatedCash, "Current estimate"],
+    ["Estimated Equity (IDR)", analytics.capitalPosition.estimatedEquity, "Current estimate"],
   ] as const;
   return csvResponse("accstacks-financial-summary.csv", ["Metric", "Value", "Scope"], rows);
 }

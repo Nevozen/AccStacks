@@ -110,6 +110,33 @@ export function resolveDateRange({
   };
 }
 
+export function resolvePreviousDateRange(args: Parameters<typeof resolveDateRange>[0]) {
+  const current = resolveDateRange(args);
+  if (args.range === "all") return { from: null, toExclusive: null, label: null };
+  const currentFrom = DateTime.fromJSDate(current.from!);
+  const currentEnd = DateTime.fromJSDate(current.toExclusive!);
+  let previousFrom = currentFrom.minus({ months: 1 });
+  let label = "from last month";
+
+  if (args.range === "last7" || args.range === "last30" || args.range === "custom") {
+    const duration = currentEnd.diff(currentFrom, "milliseconds").milliseconds;
+    previousFrom = currentFrom.minus({ milliseconds: duration });
+    label =
+      args.range === "custom"
+        ? "from previous period"
+        : `from previous ${args.range === "last7" ? 7 : 30} days`;
+  } else if (args.range === "thisYear") {
+    previousFrom = currentFrom.minus({ years: 1 });
+    label = "from previous year";
+  }
+
+  return {
+    from: previousFrom.toUTC().toJSDate(),
+    toExclusive: currentFrom.toUTC().toJSDate(),
+    label,
+  };
+}
+
 export function calculateHoldingDays(start: Date, end: Date, timezone = DEFAULT_TIMEZONE) {
   const startDay = DateTime.fromJSDate(start).setZone(timezone).startOf("day");
   const endDay = DateTime.fromJSDate(end).setZone(timezone).startOf("day");

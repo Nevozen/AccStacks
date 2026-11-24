@@ -3,8 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { actionError, type ActionResult } from "@/lib/action-result";
 import type { SettingsInput } from "@/schemas/settings";
-import { updateSettings } from "@/services/settings";
+import { updateCapital, updateSettings } from "@/services/settings";
 import { requireActionUser } from "@/server/session";
+
+export async function updateCapitalAction(capital: string): Promise<ActionResult> {
+  try {
+    const user = await requireActionUser();
+    await updateCapital(user.id, capital);
+    revalidatePath("/settings");
+    revalidatePath("/overview");
+    return { success: true, message: "Starting capital saved" };
+  } catch (error) {
+    return actionError(error, "Unable to save capital");
+  }
+}
 
 export async function updateSettingsAction(input: SettingsInput): Promise<ActionResult> {
   try {

@@ -92,6 +92,40 @@ export function calculateAverage(total: bigint, count: number) {
   return count === 0 ? null : roundedFraction(total, BigInt(count));
 }
 
+export function calculateChange(current: bigint, previous: bigint) {
+  if (previous === 0n) {
+    return current === 0n
+      ? { value: "0.00%", direction: "steady" as const }
+      : { value: null, direction: "new" as const };
+  }
+  const percentage = calculatePercentage(current - previous, previous < 0n ? -previous : previous)!;
+  return {
+    value: current > previous ? `+${percentage}%` : `${percentage}%`,
+    direction:
+      current > previous
+        ? ("up" as const)
+        : current < previous
+          ? ("down" as const)
+          : ("steady" as const),
+  };
+}
+
+export function calculateCapitalPosition({
+  capital,
+  retainedNetProfit,
+  inventoryValue,
+}: {
+  capital: bigint;
+  retainedNetProfit: bigint;
+  inventoryValue: bigint;
+}) {
+  const estimatedEquity = assertSafeMoney(capital + retainedNetProfit);
+  return {
+    estimatedEquity,
+    estimatedCash: assertSafeMoney(estimatedEquity - inventoryValue),
+  };
+}
+
 export function calculateUnrealizedProfit(
   accounts: readonly { purchasePrice: bigint; activeListingPrices: readonly bigint[] }[],
 ) {

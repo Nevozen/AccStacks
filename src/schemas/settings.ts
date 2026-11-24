@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { z } from "zod";
+import { moneyInputSchema } from "./account";
 
 export const settingsInputSchema = z.object({
   theme: z.enum(["LIGHT", "DARK", "SYSTEM"]),
@@ -10,6 +11,7 @@ export const settingsInputSchema = z.object({
     .refine((value) => DateTime.now().setZone(value).isValid, "Invalid timezone"),
   currency: z.literal("IDR"),
   preferredStockView: z.enum(["GRID", "TABLE"]),
+  capital: moneyInputSchema.optional(),
 });
 
 export type SettingsInput = z.infer<typeof settingsInputSchema>;

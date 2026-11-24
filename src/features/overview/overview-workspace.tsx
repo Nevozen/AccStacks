@@ -49,7 +49,7 @@ import {
   PerformanceChart,
   RevenueProfitChart,
 } from "./analytics-charts";
-import type { OverviewDto } from "./types";
+import type { ChangeDto, OverviewDto } from "./types";
 
 const ranges = [
   ["last7", "Last 7 days"],
@@ -84,7 +84,11 @@ export function OverviewWorkspace({ data, timezone }: { data: OverviewDto; timez
     },
   ];
   const financialMetrics = [
-    { label: "Total Revenue", value: <Money value={BigInt(data.financial.totalRevenue)} /> },
+    {
+      label: "Total Revenue",
+      value: <Money value={BigInt(data.financial.totalRevenue)} />,
+      change: data.comparison.revenue,
+    },
     {
       label: "Cost of Goods Sold",
       value: <Money value={BigInt(data.financial.costOfGoodsSold)} />,
@@ -93,7 +97,11 @@ export function OverviewWorkspace({ data, timezone }: { data: OverviewDto; timez
       label: "Additional Expenses",
       value: <Money value={BigInt(data.financial.totalAdditionalExpenses)} />,
     },
-    { label: "Net Profit", value: <Money value={BigInt(data.financial.netProfit)} colored /> },
+    {
+      label: "Net Profit",
+      value: <Money value={BigInt(data.financial.netProfit)} colored />,
+      change: data.comparison.netProfit,
+    },
     { label: "Profit Margin", value: formatPercentage(data.financial.profitMargin) },
     { label: "Return on Investment", value: formatPercentage(data.financial.returnOnInvestment) },
     {
@@ -231,6 +239,39 @@ export function OverviewWorkspace({ data, timezone }: { data: OverviewDto; timez
 
       <section className="space-y-3">
         <div>
+          <h2 className="text-sm font-semibold">Capital and equity</h2>
+          <p className="text-xs text-muted-foreground">
+            Estimated equity = capital + all-time retained net profit. Estimated cash = equity −
+            current inventory value. Inventory is an asset, not equity by itself; total estimated
+            assets equal estimated cash + inventory value.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <MetricCard
+            label="Owner Capital"
+            value={<Money value={BigInt(data.capitalPosition.capital)} />}
+            icon={CircleDollarSign}
+          />
+          <MetricCard
+            label="Retained Net Profit"
+            value={<Money value={BigInt(data.capitalPosition.retainedNetProfit)} colored />}
+            icon={TrendingUp}
+          />
+          <MetricCard
+            label="Estimated Cash"
+            value={<Money value={BigInt(data.capitalPosition.estimatedCash)} colored />}
+            icon={CircleDollarSign}
+          />
+          <MetricCard
+            label="Estimated Equity"
+            value={<Money value={BigInt(data.capitalPosition.estimatedEquity)} colored />}
+            icon={TrendingUp}
+          />
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div>
           <h2 className="text-sm font-semibold">Current inventory</h2>
           <p className="text-xs text-muted-foreground">
             Always reflects the latest stock and active-listing state.
@@ -248,13 +289,20 @@ export function OverviewWorkspace({ data, timezone }: { data: OverviewDto; timez
           <h2 className="text-sm font-semibold">Sales performance</h2>
           <p className="text-xs text-muted-foreground">
             {data.financial.completedSales} completed sale
-            {data.financial.completedSales === 1 ? "" : "s"} in this period. Unrealized profit is a
-            current estimate using the highest active asking price per account, not actual revenue.
+            {data.financial.completedSales === 1 ? "" : "s"} in this period
+            {data.comparison.label ? (
+              <>
+                {" "}
+                · <ChangeIndicator change={data.comparison.sales} label={data.comparison.label} />
+              </>
+            ) : null}
+            . Unrealized profit is a current estimate using the highest active asking price per
+            account, not actual revenue.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-5">
           {financialMetrics.map((metric) => (
-            <MetricCard key={metric.label} {...metric} />
+            <MetricCard key={metric.label} {...metric} comparisonLabel={data.comparison.label} />
           ))}
         </div>
       </section>
@@ -355,10 +403,14 @@ function MetricCard({
   label,
   value,
   icon: Icon = TrendingUp,
+  change,
+  comparisonLabel,
 }: {
   label: string;
   value: React.ReactNode;
   icon?: LucideIcon;
+  change?: ChangeDto;
+  comparisonLabel?: string | null;
 }) {
   return (
     <Card>
@@ -373,7 +425,26 @@ function MetricCard({
         >
           {value}
         </div>
+        {change ? <ChangeIndicator change={change} label={comparisonLabel ?? null} /> : null}
       </CardContent>
     </Card>
+  );
+}
+
+function ChangeIndicator({ change, label }: { change: ChangeDto; label: string | null }) {
+  if (!label) return null;
+  if (change.direction === "new") {
+    return <span className="mt-1 block text-[10px] font-medium text-info">New {label}</span>;
+  }
+  const className =
+    change.direction === "up"
+      ? "mt-1 block text-[10px] font-medium text-success"
+      : change.direction === "down"
+        ? "mt-1 block text-[10px] font-medium text-destructive"
+        : "mt-1 block text-[10px] text-muted-foreground";
+  return (
+    <span className={className}>
+      {change.value} {label}
+    </span>
   );
 }

@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { MoneyInput } from "@/components/shared/money-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,6 +104,24 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
             <p className="text-xs text-muted-foreground">
               Used for date inputs, displays, reporting boundaries, and exports. Timestamps remain
               UTC in PostgreSQL.
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Owner capital</Label>
+            <Controller
+              control={form.control}
+              name="capital"
+              render={({ field }) => (
+                <MoneyInput
+                  value={field.value ?? "0"}
+                  onChange={field.onChange}
+                  disabled={pending}
+                />
+              )}
+            />
+            <p className="text-xs text-muted-foreground">
+              Owner funding used as the basis for estimated cash, assets, and equity. Inventory
+              remains a separate asset.
             </p>
           </div>
           <div className="space-y-1.5">

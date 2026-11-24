@@ -13,9 +13,9 @@ test("complete account trading lifecycle", async ({ page }) => {
   await page.goto("/stocks");
   await expect(page.getByText("Add your first account")).toBeVisible();
   await page.getByRole("button", { name: "Add Account", exact: true }).first().click();
-  const accountDialog = page.getByRole("dialog");
+  const accountDialog = page.getByRole("dialog", { name: "Add account" });
   await accountDialog.getByLabel("Game name").fill("wut");
-  await accountDialog.getByRole("option", { name: "Wuthering Waves", exact: true }).click();
+  await page.getByRole("option", { name: "Wuthering Waves", exact: true }).click();
   await accountDialog.getByLabel("Account name").fill(accountName);
   await accountDialog.getByLabel("Purchase price").fill("500000");
   await accountDialog.getByLabel("Description").fill("E2E inventory account");
@@ -40,7 +40,7 @@ test("complete account trading lifecycle", async ({ page }) => {
 
   await page.getByRole("button", { name: "Account actions" }).click();
   await page.getByRole("menuitem", { name: "Create listing" }).click();
-  const firstListingDialog = page.getByRole("dialog");
+  const firstListingDialog = page.getByRole("dialog", { name: "Create new listing" });
   await firstListingDialog.getByLabel("Marketplace name").fill("Instagram");
   await firstListingDialog.getByLabel("Listing price").fill("800000");
   await firstListingDialog.getByRole("button", { name: "Create listing", exact: true }).click();
@@ -50,10 +50,10 @@ test("complete account trading lifecycle", async ({ page }) => {
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Create New Listing", exact: true }).click();
-  const secondListingDialog = page.getByRole("dialog");
+  const secondListingDialog = page.getByRole("dialog", { name: "Create new listing" });
   await secondListingDialog.getByLabel("Select account").click();
-  await secondListingDialog.getByPlaceholder("Search name, game, or ID").fill(accountName);
-  await secondListingDialog.getByRole("option").filter({ hasText: accountName }).click();
+  await page.getByPlaceholder("Search name, game, or ID").fill(accountName);
+  await page.getByRole("option").filter({ hasText: accountName }).click();
   await secondListingDialog.getByLabel("Marketplace name").fill("Facebook");
   await secondListingDialog.getByLabel("Listing price").fill("850000");
   await secondListingDialog.getByRole("button", { name: "Create listing", exact: true }).click();
@@ -70,7 +70,7 @@ test("complete account trading lifecycle", async ({ page }) => {
     "WW1-2",
   );
   await instagramCard.getByRole("button", { name: "Edit", exact: true }).click();
-  const editDialog = page.getByRole("dialog");
+  const editDialog = page.getByRole("dialog", { name: "Edit listing" });
   await editDialog.getByLabel("Listing price").fill("825000");
   await editDialog.getByRole("button", { name: "Save changes" }).click();
   await expect(editDialog).toBeHidden();
@@ -82,7 +82,7 @@ test("complete account trading lifecycle", async ({ page }) => {
   const editedInstagramCard = page.getByTestId("listing-card").filter({ hasText: "Instagram" });
   await expect(editedInstagramCard).toContainText("Rp825.000");
   await editedInstagramCard.getByRole("button", { name: "Mark as Sold" }).click();
-  const saleDialog = page.getByRole("dialog");
+  const saleDialog = page.getByRole("dialog", { name: "Confirm account sale" });
   await saleDialog.getByLabel("Actual selling price").fill("800000");
   await saleDialog.getByRole("button", { name: "Add expense" }).click();
   await saleDialog.getByLabel("Expense 1 description").fill("Marketplace fee");
@@ -100,7 +100,7 @@ test("complete account trading lifecycle", async ({ page }) => {
   await expect(soldCard).toContainText("SOLD");
   await expect(soldCard).toHaveClass(/bg-muted\/60/);
   await soldCard.getByRole("button", { name: "View", exact: true }).click();
-  const detailSheet = page.getByRole("dialog");
+  const detailSheet = page.getByRole("dialog", { name: "Account details" });
   await expect(detailSheet).toContainText("Rp275.000");
   await expect(detailSheet).toContainText("Marketplace fee");
   await expect(detailSheet).toContainText("Middleman fee");
@@ -112,15 +112,20 @@ test("complete account trading lifecycle", async ({ page }) => {
   await expect(page.getByText("Total Revenue", { exact: true })).toBeVisible();
   await expect(page.getByText("Rp800.000", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Rp275.000", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Owner Capital", { exact: true })).toBeVisible();
+  await expect(page.getByText("Rp1.275.000", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: accountName })).toBeVisible();
 
   await page.getByRole("button", { name: /Search accounts/ }).click();
-  const searchDialog = page.getByRole("dialog");
+  const searchDialog = page.getByRole("dialog", { name: "Global account search" });
   await searchDialog.getByPlaceholder("Search account name, game, or ID…").fill(accountName);
   await searchDialog.getByRole("option").filter({ hasText: accountName }).click();
   await expect(page).toHaveURL(/\/stocks\?account=/);
-  await expect(page.getByRole("dialog")).toContainText(accountName);
-  await page.getByRole("dialog").getByRole("button", { name: "Close" }).click();
+  await expect(page.getByRole("dialog", { name: "Account details" })).toContainText(accountName);
+  await page
+    .getByRole("dialog", { name: "Account details" })
+    .getByRole("button", { name: "Close" })
+    .click();
 
   const exportResponse = await page.request.get("/api/export/sales");
   expect(exportResponse.status()).toBe(200);
