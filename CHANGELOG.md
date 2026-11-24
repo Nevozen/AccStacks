@@ -24,3 +24,5 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Global account search and persistent theme, timezone, and stock-view preferences.
 - Protected inventory, listing, sales, and financial-summary CSV exports with formula-injection protection.
 - End-to-end account lifecycle, authorization, validation, theme, mobile, loss-sale, and duplicate-submission coverage.
+- Production Docker images, private PostgreSQL Compose deployment, explicit migrations, and health checks.
+- GitHub Actions quality, integration, and Playwright pipelines plus self-hosting and backup documentation.

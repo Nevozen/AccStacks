@@ -124,7 +124,7 @@ Profit margin and ROI are undefined when their respective denominators are zero.
 
 All monetary values use Indonesian Rupiah (IDR) by default.
 
-## Planned Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 | :--- | :--- |
@@ -139,7 +139,7 @@ All monetary values use Indonesian Rupiah (IDR) by default.
 | Validation | Zod |
 | Deployment | Docker / Self-hosted VPS |
 
-## Planned Data Model
+## Data Model
 
 ```mermaid
 erDiagram
@@ -156,20 +156,92 @@ erDiagram
 
 ## Getting Started
 
-The project is currently in development. The technology stack and features described in this README represent the intended implementation. Local installation, environment configuration, database migration, and deployment instructions will be added once the repository implementation is available.
+### Prerequisites
+
+- Node.js 24 or a compatible current LTS release.
+- pnpm 11.18.0 (the repository pins this version through Corepack).
+- Docker Engine/Desktop with Docker Compose for PostgreSQL.
+- Git Bash, macOS, Linux, or an equivalent shell for the example commands.
+
+### Local installation
+
+1. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+2. Create `.env` from `.env.example` and replace every placeholder. Generate independent authentication secrets with:
+
+   ```bash
+   node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"
+   ```
+
+3. Start development PostgreSQL and apply migrations:
+
+   ```bash
+   docker compose up -d db
+   pnpm db:migrate
+   ```
+
+4. Set `OWNER_NAME`, `OWNER_EMAIL`, and a unique strong `OWNER_PASSWORD` in `.env`, then provision the private owner:
+
+   ```bash
+   pnpm auth:create-owner
+   ```
+
+   Public registration is disabled. The same command can provision a demo owner for the optional development seed using the `SEED_OWNER_*` variables. Run `pnpm db:seed` only when sample data is explicitly wanted; it is blocked in production and skipped when the owner already has records.
+
+5. Start the application:
+
+   ```bash
+   pnpm dev
+   ```
+
+   Open `http://localhost:3000`, sign in, and the Overview, Stocks, Listings, and Settings workspace will be available.
+
+### Automated checks
+
+Create the isolated test database once (the default development credentials are shown; adjust for your environment):
+
+```bash
+docker exec accstacks-db-1 createdb -U accstacks accstacks_test
+```
+
+Set `TEST_DATABASE_URL` to that database, install Chromium with `pnpm exec playwright install chromium`, then run:
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm test:unit
+pnpm test:integration
+pnpm test:e2e
+pnpm build
+```
+
+Integration and E2E tests always require a database name ending in `_test`; development and production data are never valid test targets.
+
+### Production and reference documentation
+
+- [Docker and HTTPS deployment](docs/deployment.md)
+- [Database backup and restoration](docs/backup-restore.md)
+- [Financial calculation and lifecycle rules](docs/financial-rules.md)
+- [Contribution workflow](CONTRIBUTING.md)
+- [Agent engineering rules](AGENTS.md)
 
 ## Roadmap
 
-- [ ] Application layout and responsive dashboard
-- [ ] Database schema and inventory management
-- [ ] Multi-marketplace listing management
-- [ ] Sales confirmation and transaction history
-- [ ] Revenue and profit analytics
-- [ ] Search, filters, and sorting
-- [ ] Authentication and private data protection
-- [ ] Dark and light themes
-- [ ] CSV export for inventory and sales
-- [ ] Automated tests and Docker deployment
+- [x] Application layout and responsive dashboard
+- [x] Database schema and inventory management
+- [x] Multi-marketplace listing management
+- [x] Sales confirmation and transaction history
+- [x] Revenue and profit analytics
+- [x] Search, filters, and sorting
+- [x] Authentication and private data protection
+- [x] Dark and light themes
+- [x] CSV export for inventory and sales
+- [x] Automated tests and Docker deployment
 
 ## Security & Responsible Use
 

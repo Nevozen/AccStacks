@@ -19,7 +19,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:test:deploy": "prisma migrate deploy --config prisma.test.config.ts",
+    "db:test:deploy": "prisma generate --config prisma.test.config.ts && prisma migrate deploy --config prisma.test.config.ts",
     "db:seed": "tsx prisma/seed.ts",
     "auth:create-owner": "tsx prisma/create-owner.ts",
     "prepare": "husky"
