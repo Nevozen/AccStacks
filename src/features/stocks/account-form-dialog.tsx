@@ -207,17 +207,17 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
-      <Label>
+    <Label className="block space-y-1.5">
+      <span className="block">
         {label}
         {required ? <span className="ml-1 text-destructive">*</span> : null}
-      </Label>
+      </span>
       {children}
       {error ? (
-        <p className="text-xs text-destructive" role="alert">
+        <span className="block text-xs text-destructive" role="alert">
           {error}
-        </p>
+        </span>
       ) : null}
-    </div>
+    </Label>
   );
 }

@@ -23,3 +23,4 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Revenue, profit, inventory, game, marketplace, and holding-period analytics with recent sales.
 - Global account search and persistent theme, timezone, and stock-view preferences.
 - Protected inventory, listing, sales, and financial-summary CSV exports with formula-injection protection.
+- End-to-end account lifecycle, authorization, validation, theme, mobile, loss-sale, and duplicate-submission coverage.

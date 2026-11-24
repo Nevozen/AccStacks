@@ -16,7 +16,7 @@ export const MoneyInput = forwardRef<
   }
 >(function MoneyInput({ value, onChange, ...props }, ref) {
   return (
-    <div className="relative">
+    <span className="relative block">
       <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">
         Rp
       </span>
@@ -29,6 +29,6 @@ export const MoneyInput = forwardRef<
         value={groupDigits(value)}
         onChange={(event) => onChange(event.target.value.replace(/\D/g, "").slice(0, 16))}
       />
-    </div>
+    </span>
   );
 });

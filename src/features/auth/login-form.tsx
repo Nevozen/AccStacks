@@ -28,7 +28,9 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
         return;
       }
       const destination =
-        callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : "/";
+        callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") && !callbackUrl.includes("\\")
+          ? callbackUrl
+          : "/";
       router.push(destination);
       router.refresh();
     } catch {

@@ -138,7 +138,7 @@ export function SaleConfirmationDialog({
             <form id="sale-form" className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label>
+                  <Label htmlFor="sale-selling-price">
                     Actual selling price <span className="text-destructive">*</span>
                   </Label>
                   <Controller
@@ -146,6 +146,7 @@ export function SaleConfirmationDialog({
                     name="sellingPrice"
                     render={({ field }) => (
                       <MoneyInput
+                        id="sale-selling-price"
                         value={field.value}
                         onChange={field.onChange}
                         disabled={pending}
@@ -159,10 +160,15 @@ export function SaleConfirmationDialog({
                   ) : null}
                 </div>
                 <div className="space-y-1.5">
-                  <Label>
+                  <Label htmlFor="sale-date">
                     Sale date <span className="text-destructive">*</span>
                   </Label>
-                  <Input type="date" {...form.register("soldAt")} disabled={pending} />
+                  <Input
+                    id="sale-date"
+                    type="date"
+                    {...form.register("soldAt")}
+                    disabled={pending}
+                  />
                   {form.formState.errors.soldAt ? (
                     <p className="text-xs text-destructive">
                       {form.formState.errors.soldAt.message}
@@ -233,8 +239,9 @@ export function SaleConfirmationDialog({
                 ))}
               </div>
               <div className="space-y-1.5">
-                <Label>Transaction notes</Label>
+                <Label htmlFor="sale-notes">Transaction notes</Label>
                 <Textarea
+                  id="sale-notes"
                   {...form.register("notes")}
                   placeholder="Payment or handover details"
                   disabled={pending}

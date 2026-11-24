@@ -24,7 +24,7 @@ export function ListingCard({
   onMarkSold: () => void;
 }) {
   return (
-    <Card className="flex flex-col p-4">
+    <Card className="flex flex-col p-4" data-testid="listing-card">
       <div className="flex items-start gap-3">
         <AccountThumbnail src={listing.account.imageUrl} alt="" />
         <div className="min-w-0 flex-1">

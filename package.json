@@ -15,7 +15,7 @@
     "test": "pnpm test:unit",
     "test:unit": "vitest run tests/unit",
     "test:integration": "pnpm db:test:deploy && vitest run --config vitest.integration.config.ts",
-    "test:e2e": "playwright test",
+    "test:e2e": "pnpm db:test:deploy && playwright test",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -60,6 +60,7 @@
   "devDependencies": {
     "@commitlint/cli": "21.2.4",
     "@commitlint/config-conventional": "21.2.4",
+    "@playwright/test": "1.65.1",
     "@tailwindcss/postcss": "4.3.5",
     "@types/luxon": "3.7.6",
     "@types/node": "24.19.2",

@@ -32,7 +32,10 @@ export function AccountCard({
 }) {
   const sold = account.status === "SOLD";
   return (
-    <Card className={cn("relative overflow-hidden p-4", sold && "bg-muted/60")}>
+    <Card
+      className={cn("relative overflow-hidden p-4", sold && "bg-muted/60")}
+      data-testid="account-card"
+    >
       {sold ? (
         <span
           className="pointer-events-none absolute right-3 bottom-1 text-6xl font-bold tracking-tight text-foreground/5"

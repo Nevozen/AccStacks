@@ -194,12 +194,13 @@ export function ListingFormDialog({
         >
           {!listing ? (
             <div className="space-y-1.5 sm:col-span-2">
-              <Label>
+              <Label htmlFor="listing-account">
                 Select account <span className="text-destructive">*</span>
               </Label>
               <Popover open={accountOpen} onOpenChange={setAccountOpen}>
                 <PopoverTrigger asChild>
                   <Button
+                    id="listing-account"
                     type="button"
                     variant="outline"
                     className="h-auto min-h-9 w-full justify-between py-2"
@@ -394,18 +395,18 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
-      <Label>
+    <Label className="block space-y-1.5">
+      <span className="block">
         {label}
         {required ? <span className="ml-1 text-destructive">*</span> : null}
-      </Label>
+      </span>
       {children}
       {error ? (
-        <p className="text-xs text-destructive" role="alert">
+        <span className="block text-xs text-destructive" role="alert">
           {error}
-        </p>
+        </span>
       ) : null}
-    </div>
+    </Label>
   );
 }
 
