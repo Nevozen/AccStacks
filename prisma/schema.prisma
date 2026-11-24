@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum StockView {
+  GRID
+  TABLE
+}
+
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  CANCELLED
+  CLOSED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  accounts     Account[]
+  settings     UserSettings?
+  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
+}
+
+model UserSettings {
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme              Theme     @default(SYSTEM)
+  currency           String    @default("IDR") @db.Char(3)
+  timezone           String    @default("Asia/Jakarta")
+  preferredStockView StockView @default(GRID)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(6)
+}
+
+model Account {
+  id                 String    @id @default(cuid())
+  ownerId            String
+  owner              User      @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  gameName           String
+  gameNameNormalized String
+  accountName        String
+  description        String?
+  imageUrl           String?
+  purchasePrice      BigInt
+  purchaseDate       DateTime  @db.Timestamptz(6)
+  purchasedFrom      String?
+  notes              String?
+  createdAt          DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(6)
+  deletedAt          DateTime? @db.Timestamptz(6)
+  listings           Listing[]
+  sale               Sale?
+
+  @@index([ownerId, deletedAt])
+  @@index([ownerId, gameNameNormalized])
+  @@index([ownerId, purchaseDate])
+}
+
+model Listing {
+  id                    String        @id @default(cuid())
+  accountId             String
+  account               Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  marketplace           String
+  marketplaceNormalized String
+  listingPrice          BigInt
+  listingUrl            String?
+  notes                 String?
+  status                ListingStatus @default(ACTIVE)
+  listedAt              DateTime      @db.Timestamptz(6)
+  closedAt              DateTime?     @db.Timestamptz(6)
+  createdAt             DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime      @updatedAt @db.Timestamptz(6)
+  sale                  Sale?
+
+  @@unique([id, accountId])
+  @@index([accountId, status])
+  @@index([marketplaceNormalized, status])
+  @@index([listedAt])
+}
+
+model Sale {
+  id                    String        @id @default(cuid())
+  accountId             String        @unique
+  listingId             String        @unique
+  account               Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  listing               Listing       @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  marketplace           String
+  marketplaceNormalized String
+  purchasePrice         BigInt
+  originalListingPrice  BigInt
+  sellingPrice          BigInt
+  totalExpenses         BigInt
+  netProfit             BigInt
+  soldAt                DateTime      @db.Timestamptz(6)
+  notes                 String?
+  createdAt             DateTime      @default(now()) @db.Timestamptz(6)
+  expenses              SaleExpense[]
+
+  @@index([soldAt])
+  @@index([marketplaceNormalized, soldAt])
+  @@index([listingId, accountId])
+}
+
+model SaleExpense {
+  id        String   @id @default(cuid())
+  saleId    String
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  name      String
+  amount    BigInt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([saleId])
+}
+
+model AuthThrottle {
+  id              String    @id @default(cuid())
+  key             String    @unique
+  failureCount    Int       @default(0)
+  windowStartedAt DateTime  @db.Timestamptz(6)
+  blockedUntil    DateTime? @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([blockedUntil])
+}
