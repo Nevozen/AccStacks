@@ -150,16 +150,33 @@ export async function getListingsData(ownerId: string, query: ListingQuery) {
   const ids = await db.$queryRaw<{ id: string }[]>(
     Prisma.sql`SELECT l.id ${from} ORDER BY ${listingOrder(sort)} LIMIT ${pageSize} OFFSET ${(currentPage - 1) * pageSize}`,
   );
-  const records = ids.length
+  const pageRecords = ids.length
     ? await db.listing.findMany({
         where: { id: { in: ids.map((row) => row.id) } },
         include: listingInclude,
       })
     : [];
-  const byId = new Map(records.map((record) => [record.id, record]));
+  const byId = new Map(pageRecords.map((record) => [record.id, record]));
+  const accountIds = [...new Set(pageRecords.map((record) => record.accountId))];
+  const records = accountIds.length
+    ? await db.listing.findMany({
+        where: {
+          status: "ACTIVE",
+          accountId: { in: accountIds },
+          account: { ownerId, deletedAt: null, sale: null },
+        },
+        include: listingInclude,
+        orderBy: { listedAt: "desc" },
+      })
+    : [];
+  const accountOrder = ids
+    .map((row) => byId.get(row.id)!.accountId)
+    .filter((accountId, index, all) => all.indexOf(accountId) === index);
 
   return {
-    listings: ids.map((row) => byId.get(row.id)!),
+    listings: accountOrder.flatMap((accountId) =>
+      records.filter((record) => record.accountId === accountId),
+    ),
     totalActiveListings,
     uniqueListedAccounts: uniqueAccounts.length,
     totalFiltered,
@@ -189,7 +206,13 @@ export async function getEligibleAccounts(ownerId: string, search = "") {
     include: {
       listings: {
         where: { status: "ACTIVE" },
-        select: { id: true, marketplace: true, marketplaceNormalized: true, listingPrice: true },
+        select: {
+          id: true,
+          listingCode: true,
+          marketplace: true,
+          marketplaceNormalized: true,
+          listingPrice: true,
+        },
         orderBy: { listedAt: "desc" },
       },
     },

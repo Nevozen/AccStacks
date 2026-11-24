@@ -15,6 +15,7 @@ export function toEligibleAccountDto(
     purchasePrice: account.purchasePrice.toString(),
     activeListings: account.listings.map((listing) => ({
       id: listing.id,
+      listingCode: listing.listingCode,
       marketplace: listing.marketplace,
       marketplaceNormalized: listing.marketplaceNormalized,
       listingPrice: listing.listingPrice.toString(),

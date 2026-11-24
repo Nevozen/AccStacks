@@ -10,7 +10,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { POPULAR_GAMES } from "@/lib/games";
 import { normalizeCategory } from "@/lib/normalization";
 
@@ -50,7 +50,7 @@ export function GameNameInput({
 
   return (
     <Popover open={open && value.trim().length > 0} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverAnchor asChild>
         <Input
           value={value}
           onChange={(event) => {
@@ -68,7 +68,7 @@ export function GameNameInput({
           autoComplete="off"
           disabled={disabled}
         />
-      </PopoverTrigger>
+      </PopoverAnchor>
       <PopoverContent
         className="w-[var(--radix-popover-trigger-width)] p-0"
         align="start"

@@ -14,15 +14,16 @@ test("complete account trading lifecycle", async ({ page }) => {
   await expect(page.getByText("Add your first account")).toBeVisible();
   await page.getByRole("button", { name: "Add Account", exact: true }).first().click();
   const accountDialog = page.getByRole("dialog");
-  await accountDialog.getByLabel("Game name").fill("Mobile Legends");
+  await accountDialog.getByLabel("Game name").fill("wut");
+  await accountDialog.getByRole("option", { name: "Wuthering Waves", exact: true }).click();
   await accountDialog.getByLabel("Account name").fill(accountName);
   await accountDialog.getByLabel("Purchase price").fill("500000");
   await accountDialog.getByLabel("Description").fill("E2E inventory account");
   await accountDialog.getByRole("button", { name: "Add account", exact: true }).click();
   await expect(accountDialog).toBeHidden();
-  await expect(page.getByTestId("account-card").filter({ hasText: accountName })).toContainText(
-    "AVAILABLE",
-  );
+  const availableCard = page.getByTestId("account-card").filter({ hasText: accountName });
+  await expect(availableCard).toContainText("AVAILABLE");
+  await expect(availableCard).toContainText("WW1");
 
   await page.getByRole("button", { name: "Account actions" }).click();
   await page.getByRole("menuitem", { name: "Create listing" }).click();
@@ -31,7 +32,9 @@ test("complete account trading lifecycle", async ({ page }) => {
   await firstListingDialog.getByLabel("Listing price").fill("800000");
   await firstListingDialog.getByRole("button", { name: "Create listing", exact: true }).click();
   await expect(firstListingDialog).toBeHidden();
-  await expect(page.getByTestId("listing-card").filter({ hasText: "Instagram" })).toBeVisible();
+  await expect(
+    page.getByTestId("listing-account-card").filter({ hasText: "Instagram" }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Create New Listing", exact: true }).click();
   const secondListingDialog = page.getByRole("dialog");
@@ -42,17 +45,30 @@ test("complete account trading lifecycle", async ({ page }) => {
   await secondListingDialog.getByLabel("Listing price").fill("850000");
   await secondListingDialog.getByRole("button", { name: "Create listing", exact: true }).click();
   await expect(secondListingDialog).toBeHidden();
+  const groupCard = page.getByTestId("listing-account-card");
+  await expect(groupCard).toHaveCount(1);
+  await expect(groupCard).toContainText("2 active");
+  await groupCard.getByRole("button", { name: "Show all listings (2)" }).click();
   await expect(page.getByTestId("listing-card")).toHaveCount(2);
 
   const instagramCard = page.getByTestId("listing-card").filter({ hasText: "Instagram" });
+  await expect(instagramCard).toContainText("WW1-1");
+  await expect(page.getByTestId("listing-card").filter({ hasText: "Facebook" })).toContainText(
+    "WW1-2",
+  );
   await instagramCard.getByRole("button", { name: "Edit", exact: true }).click();
   const editDialog = page.getByRole("dialog");
   await editDialog.getByLabel("Listing price").fill("825000");
   await editDialog.getByRole("button", { name: "Save changes" }).click();
   await expect(editDialog).toBeHidden();
-  await expect(instagramCard).toContainText("Rp825.000");
 
-  await instagramCard.getByRole("button", { name: "Mark as Sold" }).click();
+  await page
+    .getByTestId("listing-account-card")
+    .getByRole("button", { name: "Show all listings (2)" })
+    .click();
+  const editedInstagramCard = page.getByTestId("listing-card").filter({ hasText: "Instagram" });
+  await expect(editedInstagramCard).toContainText("Rp825.000");
+  await editedInstagramCard.getByRole("button", { name: "Mark as Sold" }).click();
   const saleDialog = page.getByRole("dialog");
   await saleDialog.getByLabel("Actual selling price").fill("800000");
   await saleDialog.getByRole("button", { name: "Add expense" }).click();

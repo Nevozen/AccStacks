@@ -7,6 +7,7 @@ export type EligibleAccountDto = {
   purchasePrice: string;
   activeListings: {
     id: string;
+    listingCode: string;
     marketplace: string;
     marketplaceNormalized: string;
     listingPrice: string;
@@ -32,4 +33,9 @@ export type ListingDto = {
     purchaseDate: string;
     activeListingCount: number;
   };
+};
+
+export type ListingGroupDto = {
+  account: ListingDto["account"];
+  listings: ListingDto[];
 };

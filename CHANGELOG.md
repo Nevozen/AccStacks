@@ -28,3 +28,4 @@ All notable changes to AccStacks are documented in this file. The format follows
 - GitHub Actions quality, integration, and Playwright pipelines plus self-hosting and backup documentation.
 - Per-owner game-prefixed account IDs and linked sequential listing IDs with collision-safe backfill.
 - Expanded popular-game autocomplete with free-text selection and no dropdown-only input.
+- Stacked account-level listing cards with a complete independent-marketplace detail sheet.

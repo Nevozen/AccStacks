@@ -278,7 +278,8 @@ export function ListingFormDialog({
                   <div className="flex flex-wrap gap-1.5">
                     {selectedAccount.activeListings.map((item) => (
                       <span key={item.id} className="rounded bg-secondary px-2 py-1 text-[10px]">
-                        {item.marketplace}: <Money value={BigInt(item.listingPrice)} />
+                        {item.marketplace} ({item.listingCode}):{" "}
+                        <Money value={BigInt(item.listingPrice)} />
                       </span>
                     ))}
                   </div>
