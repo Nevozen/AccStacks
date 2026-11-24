@@ -19,11 +19,24 @@ test("complete account trading lifecycle", async ({ page }) => {
   await accountDialog.getByLabel("Account name").fill(accountName);
   await accountDialog.getByLabel("Purchase price").fill("500000");
   await accountDialog.getByLabel("Description").fill("E2E inventory account");
+  await accountDialog.locator("#account-image-file").setInputFiles({
+    name: "pixel.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9WlF8AAAAASUVORK5CYII=",
+      "base64",
+    ),
+  });
   await accountDialog.getByRole("button", { name: "Add account", exact: true }).click();
   await expect(accountDialog).toBeHidden();
   const availableCard = page.getByTestId("account-card").filter({ hasText: accountName });
   await expect(availableCard).toContainText("AVAILABLE");
   await expect(availableCard).toContainText("WW1");
+  const uploadedImage = availableCard.locator("img").first();
+  await expect(uploadedImage).toBeVisible();
+  const uploadedImageSrc = await uploadedImage.getAttribute("src");
+  expect(uploadedImageSrc).toContain("/api/uploads/");
+  expect((await page.request.get(uploadedImageSrc!)).status()).toBe(200);
 
   await page.getByRole("button", { name: "Account actions" }).click();
   await page.getByRole("menuitem", { name: "Create listing" }).click();

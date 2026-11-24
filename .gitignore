@@ -21,6 +21,7 @@ test-results/
 !.env.example
 
 # Local files
+.data/
 .DS_Store
 Thumbs.db
 *.log

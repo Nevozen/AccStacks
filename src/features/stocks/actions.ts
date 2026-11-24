@@ -17,9 +17,9 @@ function revalidateInventory() {
 export async function createAccountAction(input: AccountInput): Promise<ActionResult> {
   try {
     const user = await requireActionUser();
-    await createAccount(user.id, input);
+    const account = await createAccount(user.id, input);
     revalidateInventory();
-    return { success: true, message: "Account added to Stocks" };
+    return { success: true, message: "Account added to Stocks", accountId: account.id };
   } catch (error) {
     return actionError(error, "Unable to create account");
   }
@@ -31,9 +31,9 @@ export async function updateAccountAction(
 ): Promise<ActionResult> {
   try {
     const user = await requireActionUser();
-    await updateAccount(user.id, accountId, input);
+    const account = await updateAccount(user.id, accountId, input);
     revalidateInventory();
-    return { success: true, message: "Account updated" };
+    return { success: true, message: "Account updated", accountId: account.id };
   } catch (error) {
     return actionError(error, "Unable to update account");
   }

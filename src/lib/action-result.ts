@@ -4,6 +4,7 @@ import { AppError } from "./errors";
 export type ActionResult = {
   success: boolean;
   message: string;
+  accountId?: string;
   fieldErrors?: Record<string, string[] | undefined>;
 };
 

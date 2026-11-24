@@ -13,6 +13,7 @@ The production Compose configuration:
 - Runs Next.js as a non-root user with a read-only filesystem and dropped capabilities.
 - Keeps PostgreSQL on a private Docker network with no published database port.
 - Persists PostgreSQL in a named volume.
+- Persists private account thumbnails in the `accstacks-uploads` volume at `/data/uploads`; images are served only through authenticated, ownership-checked routes.
 - Publishes the app only on `127.0.0.1:3000` for a reverse proxy.
 - Provides app and database health checks.
 

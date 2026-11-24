@@ -323,6 +323,7 @@ export function StocksWorkspace({
       ) : null}
 
       <AccountFormDialog
+        key={editing?.id ?? "new-account"}
         account={editing}
         games={games}
         open={formOpen}

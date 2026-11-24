@@ -15,6 +15,19 @@ docker compose -f compose.prod.yaml exec -T db \
 
 Verify that the new file exists, has nonzero size, and contains expected schema/data statements. Periodically test restoration on an isolated PostgreSQL instance.
 
+## Back up private thumbnails
+
+Database dumps do not include uploaded thumbnails. Back up the `accstacks-uploads` volume separately. For a consistent offline backup, stop the app first:
+
+```bash
+docker compose -f compose.prod.yaml stop app
+mkdir -p backups/uploads
+docker compose -f compose.prod.yaml cp app:/data/uploads/. ./backups/uploads/
+docker compose -f compose.prod.yaml start app
+```
+
+Keep upload backups with their corresponding database backup. Restore thumbnails into `/data/uploads` on the target volume before starting the restored app. Private images are accessible only through authenticated, ownership-checked routes.
+
 ## Restore into a new isolated database
 
 Do not overwrite an active production database as a routine restore method. First create a fresh database with an appropriate name:

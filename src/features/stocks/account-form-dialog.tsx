@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MoneyInput } from "@/components/shared/money-input";
 import { GameNameInput } from "@/components/shared/game-name-input";
+import { LocalImageInput } from "@/components/shared/local-image-input";
 import { todayInput } from "@/lib/dates";
 import { accountInputSchema, type AccountInput } from "@/schemas/account";
 import { createAccountAction, updateAccountAction } from "./actions";
@@ -48,6 +49,8 @@ export function AccountFormDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageRemoved, setImageRemoved] = useState(false);
   const form = useForm<AccountInput>({
     resolver: zodResolver(accountInputSchema),
     defaultValues: emptyValues,
@@ -71,10 +74,21 @@ export function AccountFormDialog({
     );
   }, [account, form, open]);
 
+  function closeDialog(value: boolean) {
+    if (!value) {
+      setImageFile(null);
+      setImageRemoved(false);
+    }
+    onOpenChange(value);
+  }
+
   async function onSubmit(values: AccountInput) {
     const result = account
-      ? await updateAccountAction(account.id, values)
-      : await createAccountAction(values);
+      ? await updateAccountAction(account.id, {
+          ...values,
+          imageUrl: imageRemoved ? "" : values.imageUrl,
+        })
+      : await createAccountAction({ ...values, imageUrl: imageRemoved ? "" : values.imageUrl });
     if (!result.success) {
       for (const [field, messages] of Object.entries(result.fieldErrors ?? {})) {
         if (messages?.[0]) form.setError(field as keyof AccountInput, { message: messages[0] });
@@ -82,8 +96,24 @@ export function AccountFormDialog({
       toast.error(result.message);
       return;
     }
+    if (imageFile && result.accountId) {
+      const uploadForm = new FormData();
+      uploadForm.set("accountId", result.accountId);
+      uploadForm.set("file", imageFile);
+      const response = await fetch("/api/accounts/images", { method: "POST", body: uploadForm });
+      if (!response.ok) {
+        const uploadError = (await response.json()) as { error?: string };
+        toast.warning(
+          uploadError.error ??
+            "Account saved, but the image upload failed. Edit the account to retry.",
+        );
+        closeDialog(false);
+        router.refresh();
+        return;
+      }
+    }
     toast.success(result.message);
-    onOpenChange(false);
+    closeDialog(false);
     router.refresh();
   }
 
@@ -91,7 +121,7 @@ export function AccountFormDialog({
   const pending = form.formState.isSubmitting;
 
   return (
-    <Dialog open={open} onOpenChange={(value) => !pending && onOpenChange(value)}>
+    <Dialog open={open} onOpenChange={(value) => !pending && closeDialog(value)}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{account ? "Edit account" : "Add account"}</DialogTitle>
@@ -151,14 +181,21 @@ export function AccountFormDialog({
               disabled={pending}
             />
           </Field>
-          <Field label="Thumbnail URL (HTTPS)" error={errors.imageUrl?.message}>
-            <Input
-              type="url"
-              {...form.register("imageUrl")}
-              placeholder="https://example.com/image.jpg"
+          <div className="space-y-1.5">
+            <Label htmlFor="account-image-file">Account thumbnail</Label>
+            <LocalImageInput
+              existingUrl={account?.imageUrl ?? null}
               disabled={pending}
+              onFile={(file) => {
+                setImageFile(file);
+                if (file) setImageRemoved(false);
+              }}
+              onRemove={() => setImageRemoved(true)}
             />
-          </Field>
+            {errors.imageUrl ? (
+              <p className="text-xs text-destructive">{errors.imageUrl.message}</p>
+            ) : null}
+          </div>
           <div className="sm:col-span-2">
             <Field label="Description" error={errors.description?.message}>
               <Textarea
@@ -182,7 +219,7 @@ export function AccountFormDialog({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => closeDialog(false)}
             disabled={pending}
           >
             Cancel

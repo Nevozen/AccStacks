@@ -39,6 +39,8 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:?Set a strong AUTH_SECRET}
       AUTH_URL: ${AUTH_URL:?Set the public HTTPS AUTH_URL}
       NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:?Set a stable encryption key}
+    volumes:
+      - accstacks-uploads:/data/uploads
     ports:
       - "127.0.0.1:${APP_PORT:-3000}:3000"
     read_only: true
@@ -68,6 +70,7 @@ services:
 
 volumes:
   accstacks-production-postgres:
+  accstacks-uploads:
 
 networks:
   accstacks-private:

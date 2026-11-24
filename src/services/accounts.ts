@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { buildAccountCode, gamePrefix } from "@/lib/codes";
+import { removeStoredImage } from "./images";
 import {
   accountInputSchema,
   stockQuerySchema,
@@ -111,7 +112,7 @@ export async function updateAccount(ownerId: string, accountId: string, input: A
   if (!account) throw new AppError("NOT_FOUND", "Account not found");
   if (account.sale) throw new AppError("CONFLICT", "Sold accounts are read-only");
 
-  return db.account.update({
+  const updated = await db.account.update({
     where: { id: account.id },
     data: {
       gameName: normalizeName(data.gameName),
@@ -125,6 +126,8 @@ export async function updateAccount(ownerId: string, accountId: string, input: A
       notes: emptyToNull(data.notes),
     },
   });
+  if (account.imageUrl !== updated.imageUrl) await removeStoredImage(account.imageUrl);
+  return updated;
 }
 
 export async function archiveAccount(ownerId: string, accountId: string) {

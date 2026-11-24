@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MAX_MONEY } from "@/lib/money";
+import { isValidStoredImageId } from "@/lib/image-files";
 
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 const httpsUrl = z
@@ -25,7 +26,20 @@ export const accountInputSchema = z.object({
   gameName: z.string().trim().min(1, "Game name is required").max(100),
   accountName: z.string().trim().min(1, "Account name is required").max(150),
   description: optionalText(2000),
-  imageUrl: z.union([z.literal(""), httpsUrl]).optional(),
+  imageUrl: z
+    .union([
+      z.literal(""),
+      httpsUrl,
+      z
+        .string()
+        .refine(
+          (value) =>
+            value.startsWith("/api/uploads/") &&
+            isValidStoredImageId(value.slice("/api/uploads/".length)),
+          "Invalid stored image path",
+        ),
+    ])
+    .optional(),
   purchasePrice: moneyInputSchema,
   purchaseDate: z.iso.date("Enter a valid purchase date"),
   purchasedFrom: optionalText(200),
