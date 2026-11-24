@@ -65,6 +65,7 @@ export default async function StocksPage({
       games={games}
       detail={detail ? toAccountDetailDto(detail, settings.timezone) : null}
       timezone={settings.timezone}
+      initialAddOpen={first(params.add) === "1"}
     />
   );
 }

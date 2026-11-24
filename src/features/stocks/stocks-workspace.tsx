@@ -48,6 +48,7 @@ export function StocksWorkspace({
   games,
   detail,
   timezone,
+  initialAddOpen,
 }: {
   accounts: StockAccountDto[];
   counts: StockCounts;
@@ -59,12 +60,13 @@ export function StocksWorkspace({
   games: string[];
   detail: AccountDetailDto | null;
   timezone: string;
+  initialAddOpen: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [navigating, startTransition] = useTransition();
-  const [formOpen, setFormOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(initialAddOpen);
   const [editing, setEditing] = useState<StockAccountDto | null>(null);
   const [deleting, setDeleting] = useState<StockAccountDto | null>(null);
   const [deletePending, setDeletePending] = useState(false);
@@ -87,6 +89,11 @@ export function StocksWorkspace({
   function openEdit(account: StockAccountDto) {
     setEditing(account);
     setFormOpen(true);
+  }
+
+  function handleFormOpen(open: boolean) {
+    setFormOpen(open);
+    if (!open && initialAddOpen) updateParams({ add: null }, false);
   }
 
   async function confirmDelete() {
@@ -311,7 +318,7 @@ export function StocksWorkspace({
         account={editing}
         games={games}
         open={formOpen}
-        onOpenChange={setFormOpen}
+        onOpenChange={handleFormOpen}
       />
       <AccountDetailSheet
         account={detail}

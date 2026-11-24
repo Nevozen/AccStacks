@@ -19,3 +19,5 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Listing search, filtering, pagination, editing, cancellation, and live profit, margin, and ROI estimates.
 - Atomic sale confirmation with dynamic expenses, loss handling, financial snapshots, and concurrent-sale protection.
 - Automatic closure of related listings and permanent read-only sold-account financial history.
+- Database-backed inventory and financial KPIs with timezone-aware reporting periods.
+- Revenue, profit, inventory, game, marketplace, and holding-period analytics with recent sales.
