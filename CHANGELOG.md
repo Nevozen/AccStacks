@@ -21,3 +21,5 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Automatic closure of related listings and permanent read-only sold-account financial history.
 - Database-backed inventory and financial KPIs with timezone-aware reporting periods.
 - Revenue, profit, inventory, game, marketplace, and holding-period analytics with recent sales.
+- Global account search and persistent theme, timezone, and stock-view preferences.
+- Protected inventory, listing, sales, and financial-summary CSV exports with formula-injection protection.

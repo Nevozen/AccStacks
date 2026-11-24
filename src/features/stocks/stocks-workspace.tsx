@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Grid2X2, List, PackageOpen, Plus, Search } from "lucide-react";
+import { Download, Grid2X2, List, PackageOpen, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -119,10 +119,18 @@ export function StocksWorkspace({
         title="Stocks"
         description={`${totalAccounts} account${totalAccounts === 1 ? "" : "s"} across your inventory.`}
         actions={
-          <Button onClick={openCreate}>
-            <Plus />
-            Add Account
-          </Button>
+          <>
+            <Button asChild variant="outline">
+              <a href="/api/export/accounts" download>
+                <Download />
+                Export CSV
+              </a>
+            </Button>
+            <Button onClick={openCreate}>
+              <Plus />
+              Add Account
+            </Button>
+          </>
         }
       />
       <div className="space-y-3">

@@ -1,0 +1,21 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { actionError, type ActionResult } from "@/lib/action-result";
+import type { SettingsInput } from "@/schemas/settings";
+import { updateSettings } from "@/services/settings";
+import { requireActionUser } from "@/server/session";
+
+export async function updateSettingsAction(input: SettingsInput): Promise<ActionResult> {
+  try {
+    const user = await requireActionUser();
+    await updateSettings(user.id, input);
+    revalidatePath("/settings");
+    revalidatePath("/stocks");
+    revalidatePath("/overview");
+    revalidatePath("/listings");
+    return { success: true, message: "Workspace settings saved" };
+  } catch (error) {
+    return actionError(error, "Unable to save settings");
+  }
+}

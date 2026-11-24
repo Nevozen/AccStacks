@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarRange,
   CircleDollarSign,
+  Download,
   Package,
   Plus,
   ReceiptText,
@@ -18,6 +19,12 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -126,6 +133,29 @@ export function OverviewWorkspace({ data, timezone }: { data: OverviewDto; timez
                 Create Listing
               </Link>
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Download />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href="/api/export/sales" download>
+                    Completed sales CSV
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a
+                    href={`/api/export/financial-summary?${new URLSearchParams({ range: data.query.range, ...(data.query.range === "custom" ? { from: data.query.from, to: data.query.to } : {}) })}`}
+                    download
+                  >
+                    Financial summary CSV
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button asChild>
               <Link href="/stocks?add=1">
                 <Plus />

@@ -29,6 +29,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "./theme-switcher";
+import { GlobalSearch } from "./global-search";
 
 const navigation = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
@@ -250,6 +251,9 @@ export function AppShell({
             <p className="hidden text-xs text-muted-foreground sm:block">
               Stack Accounts. Track Profits.
             </p>
+          </div>
+          <div className="ml-auto">
+            <GlobalSearch />
           </div>
         </header>
         <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>

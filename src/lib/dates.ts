@@ -46,6 +46,12 @@ export function formatDateTime(value: Date, timezone = DEFAULT_TIMEZONE) {
   return DateTime.fromJSDate(value).setZone(timezone).toFormat("dd MMM yyyy, HH:mm");
 }
 
+export function formatIsoInTimezone(value: Date, timezone = DEFAULT_TIMEZONE) {
+  const result = DateTime.fromJSDate(value).setZone(timezone).toISO({ suppressMilliseconds: true });
+  if (!result) throw new Error("Invalid date");
+  return result;
+}
+
 export function resolveDateRange({
   range,
   from,

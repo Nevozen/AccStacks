@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Plus, Search, Store } from "lucide-react";
+import { Download, Plus, Search, Store } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -117,10 +117,18 @@ export function ListingsWorkspace({
         title="Listings"
         description={`${totalActiveListings} active listing${totalActiveListings === 1 ? "" : "s"} across ${uniqueListedAccounts} account${uniqueListedAccounts === 1 ? "" : "s"}.`}
         actions={
-          <Button onClick={openCreate}>
-            <Plus />
-            Create New Listing
-          </Button>
+          <>
+            <Button asChild variant="outline">
+              <a href="/api/export/listings" download>
+                <Download />
+                Export CSV
+              </a>
+            </Button>
+            <Button onClick={openCreate}>
+              <Plus />
+              Create New Listing
+            </Button>
+          </>
         }
       />
       <div className="flex flex-col gap-2 xl:flex-row">
