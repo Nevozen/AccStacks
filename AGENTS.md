@@ -26,6 +26,10 @@ Use a compact, professional SaaS interface with restrained accents, accessible c
 - A sale atomically creates immutable snapshots and expenses, marks the successful listing SOLD, and closes every other active listing. Database uniqueness and transactions prevent duplicate sales.
 - Unsold accounts with no active listings may be soft-deleted. Sold accounts and completed sales remain readable and read-only.
 - Unrealized profit uses only the highest active asking price per unsold account and is explicitly an estimate.
+- Public `accountCode` values use a collision-safe game prefix and per-owner sequence; linked `listingCode` values are sequential per account and never reused after cancellation/deletion. Keep internal database IDs for relations and use public codes in displays/exports/search.
+- Group listing cards by account with a stacked summary; independent marketplace operations remain in the account's detail sheet.
+- Private thumbnails accept only valid JPEG/PNG/WebP files up to 3 MB. Store them outside `public` and serve only through authenticated, ownership-checked routes with a persistent production volume.
+- Capital is required once (`null` is unset; zero is valid). Estimated equity = capital + all-time retained net profit; estimated cash = estimated equity − current inventory value. Inventory is an asset, not equity itself. Comparisons use the immediately preceding equivalent reporting period.
 
 ## Security and data
 
