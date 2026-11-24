@@ -33,3 +33,4 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Previous-period revenue, net-profit, and sale-count comparison indicators.
 - Required owner capital with retained-profit, cash, asset, and estimated-equity reporting.
 - Production-server Playwright execution for stable end-to-end verification.
+- Inline listing expansion with unstack/restack motion and Close all instead of a side sheet.

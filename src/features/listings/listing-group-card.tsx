@@ -27,7 +27,7 @@ export function ListingGroupCard({
   const count = group.listings.length;
 
   return (
-    <div className="relative">
+    <div className="relative listing-stack-summary">
       {count > 1 ? (
         <>
           <div

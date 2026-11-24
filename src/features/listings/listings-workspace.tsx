@@ -30,7 +30,7 @@ import { SaleConfirmationDialog } from "@/features/sales/sale-confirmation-dialo
 import { cancelListingAction } from "./actions";
 import { groupListings } from "./groups";
 import { ListingGroupCard } from "./listing-group-card";
-import { ListingGroupSheet } from "./listing-group-sheet";
+import { ListingGroupExpansion } from "./listing-group-expansion";
 import { ListingFormDialog } from "./listing-form-dialog";
 import type { EligibleAccountDto, ListingDto } from "./types";
 
@@ -78,7 +78,6 @@ export function ListingsWorkspace({
   const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const groups = groupListings(listings);
-  const expandedGroup = groups.find((group) => group.account.id === expandedAccountId) ?? null;
 
   function updateParams(values: Record<string, string | null>, resetPage = true) {
     const params = new URLSearchParams(searchParams.toString());
@@ -238,13 +237,35 @@ export function ListingsWorkspace({
         <div
           className={cn("grid gap-3 md:grid-cols-2 2xl:grid-cols-3", navigating && "opacity-70")}
         >
-          {groups.map((group) => (
-            <ListingGroupCard
-              key={group.account.id}
-              group={group}
-              onShowAll={() => setExpandedAccountId(group.account.id)}
-            />
-          ))}
+          {groups.map((group) =>
+            expandedAccountId === group.account.id ? (
+              <ListingGroupExpansion
+                key={group.account.id}
+                group={group}
+                timezone={timezone}
+                onClose={() => setExpandedAccountId(null)}
+                onEdit={(listing) => {
+                  setExpandedAccountId(null);
+                  setEditing(listing);
+                  setFormOpen(true);
+                }}
+                onDelete={(listing) => {
+                  setExpandedAccountId(null);
+                  setDeleting(listing);
+                }}
+                onMarkSold={(listing) => {
+                  setExpandedAccountId(null);
+                  setSelling(listing);
+                }}
+              />
+            ) : (
+              <ListingGroupCard
+                key={group.account.id}
+                group={group}
+                onShowAll={() => setExpandedAccountId(group.account.id)}
+              />
+            ),
+          )}
         </div>
       )}
 
@@ -274,24 +295,6 @@ export function ListingsWorkspace({
         </div>
       ) : null}
 
-      <ListingGroupSheet
-        group={expandedGroup}
-        timezone={timezone}
-        onClose={() => setExpandedAccountId(null)}
-        onEdit={(listing) => {
-          setExpandedAccountId(null);
-          setEditing(listing);
-          setFormOpen(true);
-        }}
-        onDelete={(listing) => {
-          setExpandedAccountId(null);
-          setDeleting(listing);
-        }}
-        onMarkSold={(listing) => {
-          setExpandedAccountId(null);
-          setSelling(listing);
-        }}
-      />
       <ListingFormDialog
         listing={editing}
         initialAccount={initialAccount}

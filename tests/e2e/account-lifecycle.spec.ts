@@ -62,7 +62,18 @@ test("complete account trading lifecycle", async ({ page }) => {
   await expect(groupCard).toHaveCount(1);
   await expect(groupCard).toContainText("2 active");
   await groupCard.getByRole("button", { name: "Show all listings (2)" }).click();
+  await expect(page.getByTestId("listing-group-expansion")).toBeVisible();
+  await expect(page.getByTestId("listing-group-expansion")).toHaveClass(
+    /listing-unstack-container/,
+  );
   await expect(page.getByTestId("listing-card")).toHaveCount(2);
+  await page.getByRole("button", { name: "Close all" }).click();
+  await expect(page.getByTestId("listing-group-expansion")).toHaveCount(0);
+  await expect(page.getByTestId("listing-card")).toHaveCount(0);
+  await page
+    .getByTestId("listing-account-card")
+    .getByRole("button", { name: "Show all listings (2)" })
+    .click();
 
   const instagramCard = page.getByTestId("listing-card").filter({ hasText: "Instagram" });
   await expect(instagramCard).toContainText("WW1-1");
