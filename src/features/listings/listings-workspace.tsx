@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { SaleConfirmationDialog } from "@/features/sales/sale-confirmation-dialog";
 import { cancelListingAction } from "./actions";
 import { ListingCard } from "./listing-card";
 import { ListingFormDialog } from "./listing-form-dialog";
@@ -71,6 +72,7 @@ export function ListingsWorkspace({
   const [formOpen, setFormOpen] = useState(initialCreateOpen);
   const [editing, setEditing] = useState<ListingDto | null>(null);
   const [deleting, setDeleting] = useState<ListingDto | null>(null);
+  const [selling, setSelling] = useState<ListingDto | null>(null);
   const [deletePending, setDeletePending] = useState(false);
 
   function updateParams(values: Record<string, string | null>, resetPage = true) {
@@ -233,6 +235,7 @@ export function ListingsWorkspace({
                 setFormOpen(true);
               }}
               onDelete={() => setDeleting(listing)}
+              onMarkSold={() => setSelling(listing)}
             />
           ))}
         </div>
@@ -272,6 +275,7 @@ export function ListingsWorkspace({
         open={formOpen}
         onOpenChange={handleFormOpen}
       />
+      <SaleConfirmationDialog listing={selling} onClose={() => setSelling(null)} />
       <AlertDialog
         open={Boolean(deleting)}
         onOpenChange={(open) => !open && !deletePending && setDeleting(null)}

@@ -17,3 +17,5 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Available, listed, and sold categories with persistent grid/table preferences and sold-record protections.
 - Independent multi-marketplace listings with custom normalized marketplace names and duplicate warnings.
 - Listing search, filtering, pagination, editing, cancellation, and live profit, margin, and ROI estimates.
+- Atomic sale confirmation with dynamic expenses, loss handling, financial snapshots, and concurrent-sale protection.
+- Automatic closure of related listings and permanent read-only sold-account financial history.

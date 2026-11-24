@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { CalendarDays, CircleDollarSign, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { AccountThumbnail } from "@/components/shared/account-thumbnail";
 import { Money } from "@/components/shared/money";
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +15,13 @@ export function ListingCard({
   timezone,
   onEdit,
   onDelete,
+  onMarkSold,
 }: {
   listing: ListingDto;
   timezone: string;
   onEdit: () => void;
   onDelete: () => void;
+  onMarkSold: () => void;
 }) {
   return (
     <Card className="flex flex-col p-4">
@@ -78,13 +80,17 @@ export function ListingCard({
           {listing.daysListed} day{listing.daysListed === 1 ? "" : "s"} listed
         </span>
       </div>
-      <div className="mt-3 flex items-center justify-between gap-2 border-t pt-3">
+      <div className="mt-3 border-t pt-3">
         <span className="text-[11px] text-muted-foreground">
           {listing.account.activeListingCount} listing
           {listing.account.activeListingCount === 1 ? "" : "s"} on this account
         </span>
-        <div className="flex gap-1">
-          <Button variant="ghost" size="sm" onClick={onEdit}>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button size="sm" onClick={onMarkSold}>
+            <CircleDollarSign />
+            Mark as Sold
+          </Button>
+          <Button variant="outline" size="sm" onClick={onEdit}>
             <Pencil />
             Edit
           </Button>
