@@ -1,0 +1,20 @@
+name: Feature request
+description: Propose a focused AccStacks improvement
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and proposed outcome
+      description: Which reseller workflow needs improvement?
+    validations:
+      required: true
+  - type: textarea
+    id: considerations
+    attributes:
+      label: Data, financial, or security considerations
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
