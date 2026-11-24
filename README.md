@@ -45,7 +45,7 @@ Manage purchased game accounts throughout their entire lifecycle.
 - Use expanded popular-game autocomplete or enter a custom game.
 - Automatically allocate collision-safe game-prefixed account IDs and linked listing IDs.
 - Organize inventory into All Accounts, Available, Listed, and Sold Accounts.
-- Search, filter, sort, and edit account records.
+- Search, filter, sort, and edit account records, with a default Available → Listed → Sold order and alphabetical names within each status.
 - View purchase information and associated marketplace listings.
 - Display sold accounts with a dimmed appearance and a clear `SOLD` badge.
 - Preserve sold account records and their transaction history.

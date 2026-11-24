@@ -35,3 +35,4 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Production-server Playwright execution for stable end-to-end verification.
 - Inline listing expansion with unstack/restack motion and Close all instead of a side sheet.
 - Expanded groups now lead the listing grid, while single-listing accounts show direct actions without Show all.
+- Stocks now default to Available, Listed, then Sold, with alphabetical account names within each status.

@@ -54,6 +54,7 @@ export const stockQuerySchema = z.object({
   category: z.enum(["all", "available", "listed", "sold"]).default("all"),
   sort: z
     .enum([
+      "statusName",
       "newest",
       "oldest",
       "purchaseHigh",
@@ -63,7 +64,7 @@ export const stockQuerySchema = z.object({
       "profitHigh",
       "profitLow",
     ])
-    .default("newest"),
+    .default("statusName"),
   page: z.coerce.number().int().min(1).max(100_000).default(1),
   view: z.enum(["grid", "table"]).default("grid"),
 });

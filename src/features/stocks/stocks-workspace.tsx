@@ -171,12 +171,13 @@ export function StocksWorkspace({
             </Select>
             <Select
               value={query.sort}
-              onValueChange={(sort) => updateParams({ sort: sort === "newest" ? null : sort })}
+              onValueChange={(sort) => updateParams({ sort: sort === "statusName" ? null : sort })}
             >
               <SelectTrigger className="sm:w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="statusName">Status and name</SelectItem>
                 <SelectItem value="newest">Newest purchase</SelectItem>
                 <SelectItem value="oldest">Oldest purchase</SelectItem>
                 <SelectItem value="purchaseHigh">Price: high to low</SelectItem>

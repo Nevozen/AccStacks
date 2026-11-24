@@ -196,13 +196,57 @@ export async function getStocksData(ownerId: string, query: StockQuery) {
   ]);
   const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
   const currentPage = Math.min(page, totalPages);
-  const accounts = await db.account.findMany({
-    where,
-    include: stockAccountInclude,
-    orderBy,
-    skip: (currentPage - 1) * pageSize,
-    take: pageSize,
-  });
+  const accounts =
+    sort === "statusName"
+      ? await (async () => {
+          const filters = [Prisma.sql`a."ownerId" = ${ownerId}`, Prisma.sql`a."deletedAt" IS NULL`];
+          if (game) filters.push(Prisma.sql`a."gameNameNormalized" = ${normalizeCategory(game)}`);
+          if (q) {
+            const pattern = `%${q}%`;
+            filters.push(
+              Prisma.sql`(a."accountName" ILIKE ${pattern} OR a."gameName" ILIKE ${pattern} OR a.id ILIKE ${pattern} OR a."accountCode" ILIKE ${pattern})`,
+            );
+          }
+          if (category === "available") {
+            filters.push(
+              Prisma.sql`NOT EXISTS (SELECT 1 FROM "Sale" s WHERE s."accountId" = a.id)`,
+              Prisma.sql`NOT EXISTS (SELECT 1 FROM "Listing" l WHERE l."accountId" = a.id AND l.status = 'ACTIVE')`,
+            );
+          } else if (category === "listed") {
+            filters.push(
+              Prisma.sql`NOT EXISTS (SELECT 1 FROM "Sale" s WHERE s."accountId" = a.id)`,
+              Prisma.sql`EXISTS (SELECT 1 FROM "Listing" l WHERE l."accountId" = a.id AND l.status = 'ACTIVE')`,
+            );
+          } else if (category === "sold") {
+            filters.push(Prisma.sql`EXISTS (SELECT 1 FROM "Sale" s WHERE s."accountId" = a.id)`);
+          }
+          const ids = await db.$queryRaw<{ id: string }[]>(
+            Prisma.sql`SELECT a.id FROM "Account" a
+              WHERE ${Prisma.join(filters, " AND ")}
+              ORDER BY CASE
+                WHEN EXISTS (SELECT 1 FROM "Sale" s WHERE s."accountId" = a.id) THEN 2
+                WHEN EXISTS (SELECT 1 FROM "Listing" l WHERE l."accountId" = a.id AND l.status = 'ACTIVE') THEN 1
+                ELSE 0
+              END ASC,
+              lower(a."accountName") ASC,
+              a.id ASC
+              LIMIT ${pageSize} OFFSET ${(currentPage - 1) * pageSize}`,
+          );
+          if (ids.length === 0) return [];
+          const records = await db.account.findMany({
+            where: { id: { in: ids.map((row) => row.id) } },
+            include: stockAccountInclude,
+          });
+          const byId = new Map(records.map((record) => [record.id, record]));
+          return ids.map((row) => byId.get(row.id)!);
+        })()
+      : await db.account.findMany({
+          where,
+          include: stockAccountInclude,
+          orderBy,
+          skip: (currentPage - 1) * pageSize,
+          take: pageSize,
+        });
 
   return {
     accounts,
