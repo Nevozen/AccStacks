@@ -14,7 +14,7 @@ AccStacks by Wardana Dev is a private game-account reseller management applicati
 
 ## UI and localization
 
-Use a compact, professional SaaS interface with restrained accents, accessible contrast/focus/keyboard behavior, responsive layouts, loading/empty/error states, and functional controls only. Support light, dark, and system themes. The interface is English. Default to IDR and `Asia/Jakarta`; store timestamps in UTC and format them in the user's configured timezone. Format money without fractional Rupiah.
+Use a compact, professional SaaS interface with restrained accents, accessible contrast/focus/keyboard behavior, responsive layouts, loading/empty/error states, and functional controls only. Default to Light theme while supporting Dark and System preferences. The interface is English. Default to IDR and `Asia/Jakarta`; store timestamps in UTC and format them in the user's configured timezone. Format money without fractional Rupiah.
 
 ## Financial and lifecycle rules
 

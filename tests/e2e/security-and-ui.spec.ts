@@ -36,6 +36,7 @@ test("shows validation errors and supports themes and mobile navigation", async 
   await expect(dialog.getByText("Account name is required")).toBeVisible();
   await dialog.getByRole("button", { name: "Cancel" }).click();
 
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
   await page.getByRole("button", { name: "Theme", exact: true }).click();
   await page.getByRole("menuitem", { name: "Dark", exact: true }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);

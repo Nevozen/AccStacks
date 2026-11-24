@@ -33,6 +33,7 @@ describe("settings, search, and exports", () => {
   it("persists valid preferences and rejects an invalid timezone", async () => {
     const user = await createTestUser();
     expect((await getSettings(user.id)).timezone).toBe("Asia/Jakarta");
+    expect((await getSettings(user.id)).theme).toBe("LIGHT");
     const updated = await updateSettings(user.id, {
       theme: "DARK",
       timezone: "UTC",

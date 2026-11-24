@@ -240,11 +240,6 @@ export function OverviewWorkspace({ data, timezone }: { data: OverviewDto; timez
       <section className="space-y-3">
         <div>
           <h2 className="text-sm font-semibold">Capital and equity</h2>
-          <p className="text-xs text-muted-foreground">
-            Estimated equity = capital + all-time retained net profit. Estimated cash = equity −
-            current inventory value. Inventory is an asset, not equity by itself; total estimated
-            assets equal estimated cash + inventory value.
-          </p>
         </div>
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <MetricCard

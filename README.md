@@ -244,7 +244,7 @@ Integration and E2E tests always require a database name ending in `_test`; deve
 - [x] Revenue and profit analytics
 - [x] Search, filters, and sorting
 - [x] Authentication and private data protection
-- [x] Dark and light themes
+- [x] Light theme by default, with dark and system theme options
 - [x] CSV export for inventory and sales
 - [x] Automated tests and Docker deployment
 
