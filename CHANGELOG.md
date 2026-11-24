@@ -26,3 +26,5 @@ All notable changes to AccStacks are documented in this file. The format follows
 - End-to-end account lifecycle, authorization, validation, theme, mobile, loss-sale, and duplicate-submission coverage.
 - Production Docker images, private PostgreSQL Compose deployment, explicit migrations, and health checks.
 - GitHub Actions quality, integration, and Playwright pipelines plus self-hosting and backup documentation.
+- Per-owner game-prefixed account IDs and linked sequential listing IDs with collision-safe backfill.
+- Expanded popular-game autocomplete with free-text selection and no dropdown-only input.

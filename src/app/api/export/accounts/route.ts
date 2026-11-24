@@ -31,7 +31,7 @@ export async function GET() {
     "accstacks-inventory.csv",
     headers,
     accounts.map((account) => [
-      account.id,
+      account.accountCode,
       account.gameName,
       account.accountName,
       account.description,

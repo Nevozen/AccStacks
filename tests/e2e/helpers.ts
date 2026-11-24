@@ -33,9 +33,11 @@ export async function signIn(page: Page, credentials: { email: string; password:
 
 export async function createAccountAndListingFixture(ownerId: string) {
   const suffix = randomUUID().slice(0, 8);
+  const accountCode = `ML-E2E-${suffix.toUpperCase()}`;
   return testDb.account.create({
     data: {
       ownerId,
+      accountCode,
       gameName: "Mobile Legends",
       gameNameNormalized: "mobile legends",
       accountName: `Loss Sale ${suffix}`,
@@ -43,6 +45,7 @@ export async function createAccountAndListingFixture(ownerId: string) {
       purchaseDate: new Date("2026-11-01T00:00:00.000Z"),
       listings: {
         create: {
+          listingCode: `${accountCode}-1`,
           marketplace: "Instagram",
           marketplaceNormalized: "instagram",
           listingPrice: 800_000n,

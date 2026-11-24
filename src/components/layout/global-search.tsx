@@ -25,6 +25,7 @@ import type { AccountStatus } from "@/lib/account-status";
 
 type Result = {
   id: string;
+  accountCode: string;
   accountName: string;
   gameName: string;
   imageUrl: string | null;
@@ -126,7 +127,7 @@ export function GlobalSearch() {
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-medium">{account.accountName}</span>
                       <span className="block truncate text-xs text-muted-foreground">
-                        {account.gameName} · {account.id}
+                        {account.gameName} · {account.accountCode}
                       </span>
                     </span>
                     <AccountStatusBadge status={account.status} />

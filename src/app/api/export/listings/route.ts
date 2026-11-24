@@ -31,8 +31,8 @@ export async function GET() {
     "accstacks-active-listings.csv",
     headers,
     listings.map((listing) => [
-      listing.id,
-      listing.account.id,
+      listing.listingCode,
+      listing.account.accountCode,
       listing.account.gameName,
       listing.account.accountName,
       listing.marketplace,

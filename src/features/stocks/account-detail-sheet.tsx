@@ -39,8 +39,8 @@ export function AccountDetailSheet({
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-muted-foreground">{account.gameName}</p>
                 <h2 className="mt-1 font-semibold">{account.accountName}</h2>
-                <p className="mt-1 font-mono text-[10px] break-all text-muted-foreground">
-                  {account.id}
+                <p className="mt-1 font-mono text-xs font-medium text-muted-foreground">
+                  {account.accountCode}
                 </p>
               </div>
               <AccountStatusBadge status={account.status} />
@@ -115,7 +115,12 @@ export function AccountDetailSheet({
                   <div key={listing.id} className="rounded-lg border p-3 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{listing.marketplace}</span>
+                        <span className="font-medium">
+                          {listing.marketplace}{" "}
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            {listing.listingCode}
+                          </span>
+                        </span>
                         {listing.listingUrl ? (
                           <a
                             href={listing.listingUrl}

@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MoneyInput } from "@/components/shared/money-input";
+import { GameNameInput } from "@/components/shared/game-name-input";
 import { todayInput } from "@/lib/dates";
 import { accountInputSchema, type AccountInput } from "@/schemas/account";
 import { createAccountAction, updateAccountAction } from "./actions";
@@ -105,17 +106,18 @@ export function AccountFormDialog({
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <Field label="Game name" error={errors.gameName?.message} required>
-            <Input
-              {...form.register("gameName")}
-              list="account-game-suggestions"
-              placeholder="Mobile Legends"
-              disabled={pending}
+            <Controller
+              control={form.control}
+              name="gameName"
+              render={({ field }) => (
+                <GameNameInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  previousGames={games}
+                  disabled={pending}
+                />
+              )}
             />
-            <datalist id="account-game-suggestions">
-              {games.map((game) => (
-                <option key={game} value={game} />
-              ))}
-            </datalist>
           </Field>
           <Field label="Account name" error={errors.accountName?.message} required>
             <Input

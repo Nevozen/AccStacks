@@ -1,5 +1,6 @@
 export type EligibleAccountDto = {
   id: string;
+  accountCode: string;
   gameName: string;
   accountName: string;
   imageUrl: string | null;
@@ -14,6 +15,7 @@ export type EligibleAccountDto = {
 
 export type ListingDto = {
   id: string;
+  listingCode: string;
   marketplace: string;
   marketplaceNormalized: string;
   listingPrice: string;

@@ -31,6 +31,7 @@ model User {
   email        String        @unique
   passwordHash String
   accounts     Account[]
+  counters     GameCounter[]
   settings     UserSettings?
   createdAt    DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
@@ -48,8 +49,23 @@ model UserSettings {
   updatedAt          DateTime  @updatedAt @db.Timestamptz(6)
 }
 
+model GameCounter {
+  id                 String   @id @default(cuid())
+  ownerId            String
+  owner              User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  gameNameNormalized String
+  prefix             String
+  nextNumber         Int      @default(1)
+  createdAt          DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([ownerId, gameNameNormalized])
+  @@unique([ownerId, prefix])
+}
+
 model Account {
   id                 String    @id @default(cuid())
+  accountCode        String
   ownerId            String
   owner              User      @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   gameName           String
@@ -67,6 +83,7 @@ model Account {
   listings           Listing[]
   sale               Sale?
 
+  @@unique([ownerId, accountCode])
   @@index([ownerId, deletedAt])
   @@index([ownerId, gameNameNormalized])
   @@index([ownerId, purchaseDate])
@@ -74,6 +91,7 @@ model Account {
 
 model Listing {
   id                    String        @id @default(cuid())
+  listingCode           String
   accountId             String
   account               Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
   marketplace           String
@@ -89,6 +107,7 @@ model Listing {
   sale                  Sale?
 
   @@unique([id, accountId])
+  @@unique([accountId, listingCode])
   @@index([accountId, status])
   @@index([marketplaceNormalized, status])
   @@index([listedAt])

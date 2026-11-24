@@ -38,7 +38,10 @@ export function ListingCard({
             <Badge variant="success">ACTIVE</Badge>
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs font-medium">
-            {listing.marketplace}
+            <span>{listing.marketplace}</span>
+            <span className="font-mono text-[10px] text-muted-foreground">
+              {listing.listingCode}
+            </span>
             {listing.listingUrl ? (
               <a
                 href={listing.listingUrl}

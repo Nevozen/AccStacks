@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     accounts: accounts.map((account) => ({
       id: account.id,
+      accountCode: account.accountCode,
       accountName: account.accountName,
       gameName: account.gameName,
       imageUrl: account.imageUrl,

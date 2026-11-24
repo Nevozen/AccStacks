@@ -11,10 +11,12 @@ export async function searchAccounts(ownerId: string, search: string) {
         { accountName: { contains: q, mode: "insensitive" } },
         { gameName: { contains: q, mode: "insensitive" } },
         { id: { contains: q, mode: "insensitive" } },
+        { accountCode: { contains: q, mode: "insensitive" } },
       ],
     },
     select: {
       id: true,
+      accountCode: true,
       accountName: true,
       gameName: true,
       imageUrl: true,

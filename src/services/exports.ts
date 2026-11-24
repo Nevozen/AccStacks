@@ -23,7 +23,7 @@ export async function getCompletedSalesExport(ownerId: string) {
   return db.sale.findMany({
     where: { account: { ownerId } },
     include: {
-      account: { select: { accountName: true, gameName: true } },
+      account: { select: { accountCode: true, accountName: true, gameName: true } },
       expenses: { orderBy: { createdAt: "asc" } },
     },
     orderBy: { soldAt: "desc" },

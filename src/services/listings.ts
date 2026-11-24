@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma/client";
+import { buildListingCode } from "@/lib/codes";
 import { dateInputToUtc } from "@/lib/dates";
 import { AppError } from "@/lib/errors";
 import { normalizeCategory, normalizeName } from "@/lib/normalization";
@@ -16,6 +17,7 @@ const listingInclude = {
   account: {
     select: {
       id: true,
+      accountCode: true,
       gameName: true,
       accountName: true,
       description: true,
@@ -42,10 +44,13 @@ export async function createListing(ownerId: string, input: ListingInput) {
     });
     if (!account) throw new AppError("NOT_FOUND", "Eligible account not found");
     if (account.sale) throw new AppError("CONFLICT", "Sold accounts cannot be listed again");
+    await tx.$queryRaw`SELECT id FROM "Account" WHERE id = ${account.id} FOR UPDATE`;
+    const listingCount = await tx.listing.count({ where: { accountId: account.id } });
 
     return tx.listing.create({
       data: {
         accountId: account.id,
+        listingCode: buildListingCode(account.accountCode, listingCount + 1),
         marketplace: normalizeName(data.marketplace),
         marketplaceNormalized: normalizeCategory(data.marketplace),
         listingPrice: BigInt(data.listingPrice),
@@ -117,7 +122,7 @@ export async function getListingsData(ownerId: string, query: ListingQuery) {
   if (q) {
     const pattern = `%${q}%`;
     filters.push(
-      Prisma.sql`(a."accountName" ILIKE ${pattern} OR a."gameName" ILIKE ${pattern} OR a.id ILIKE ${pattern} OR l.marketplace ILIKE ${pattern})`,
+      Prisma.sql`(a."accountName" ILIKE ${pattern} OR a."gameName" ILIKE ${pattern} OR a.id ILIKE ${pattern} OR a."accountCode" ILIKE ${pattern} OR l."listingCode" ILIKE ${pattern} OR l.marketplace ILIKE ${pattern})`,
     );
   }
   if (game) filters.push(Prisma.sql`a."gameNameNormalized" = ${normalizeCategory(game)}`);

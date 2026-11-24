@@ -35,7 +35,7 @@ export async function GET() {
     headers,
     sales.map((sale) => [
       sale.id,
-      sale.accountId,
+      sale.account.accountCode,
       sale.account.gameName,
       sale.account.accountName,
       sale.marketplace,

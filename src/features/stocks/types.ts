@@ -3,6 +3,7 @@ import type { ListingStatus } from "@/generated/prisma/client";
 
 export type StockAccountDto = {
   id: string;
+  accountCode: string;
   gameName: string;
   accountName: string;
   description: string | null;
@@ -22,6 +23,7 @@ export type AccountDetailDto = Omit<StockAccountDto, "sale"> & {
   holdingDays: number;
   listings: {
     id: string;
+    listingCode: string;
     marketplace: string;
     listingPrice: string;
     listingUrl: string | null;

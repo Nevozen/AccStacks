@@ -35,6 +35,7 @@ describe("account inventory service", () => {
     const listing = await testDb.listing.create({
       data: {
         accountId: account.id,
+        listingCode: `${account.accountCode}-1`,
         marketplace: "Instagram",
         marketplaceNormalized: "instagram",
         listingPrice: 800_000n,
@@ -67,6 +68,7 @@ describe("account inventory service", () => {
     await testDb.listing.create({
       data: {
         accountId: account.id,
+        listingCode: `${account.accountCode}-1`,
         marketplace: "Facebook",
         marketplaceNormalized: "facebook",
         listingPrice: 850_000n,
@@ -93,6 +95,7 @@ describe("account inventory service", () => {
     const listing = await testDb.listing.create({
       data: {
         accountId: account.id,
+        listingCode: `${account.accountCode}-1`,
         marketplace: "Discord",
         marketplaceNormalized: "discord",
         listingPrice: 800_000n,

@@ -208,7 +208,7 @@ export function ListingFormDialog({
                   >
                     <span className={cn("truncate", !selectedAccount && "text-muted-foreground")}>
                       {selectedAccount
-                        ? `${selectedAccount.accountName} — ${selectedAccount.gameName}`
+                        ? `${selectedAccount.accountCode} — ${selectedAccount.accountName} — ${selectedAccount.gameName}`
                         : "Search available and listed accounts"}
                     </span>
                     <ChevronsUpDown className="size-4 text-muted-foreground" />

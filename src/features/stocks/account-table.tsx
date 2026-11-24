@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/dates";
-import { cn, truncateMiddle } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { StockAccountDto } from "./types";
 
 export function AccountTable({
@@ -53,8 +53,8 @@ export function AccountTable({
                 key={account.id}
                 className={cn(sold && "bg-muted/40 text-muted-foreground")}
               >
-                <TableCell className="font-mono text-xs" title={account.id}>
-                  {truncateMiddle(account.id)}
+                <TableCell className="font-mono text-xs" title={`Internal ID: ${account.id}`}>
+                  {account.accountCode}
                 </TableCell>
                 <TableCell className="max-w-48 truncate font-medium">
                   {account.accountName}

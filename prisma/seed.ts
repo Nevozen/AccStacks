@@ -1,5 +1,8 @@
 import "dotenv/config";
-import { calculateSaleMetrics } from "../src/lib/finance";
+import { dateToInput } from "../src/lib/dates";
+import { createAccount } from "../src/services/accounts";
+import { createListing } from "../src/services/listings";
+import { confirmSale } from "../src/services/sales";
 import { db } from "../src/server/db";
 import { provisionOwner } from "../src/server/owner";
 
@@ -22,117 +25,77 @@ async function main() {
   }
 
   const now = Date.now();
-  const available = await db.account.create({
-    data: {
-      ownerId: owner.id,
-      gameName: "Genshin Impact",
-      gameNameNormalized: "genshin impact",
-      accountName: "AR 58 — Fontaine Explorer",
-      description: "Exploration-ready account with a diverse character roster.",
-      purchasePrice: 750_000n,
-      purchaseDate: new Date(now - 8 * DAYS),
-      purchasedFrom: "Private seller",
-    },
+  const available = await createAccount(owner.id, {
+    gameName: "Genshin Impact",
+    accountName: "AR 58 — Fontaine Explorer",
+    description: "Exploration-ready account with a diverse character roster.",
+    imageUrl: "",
+    purchasePrice: "750000",
+    purchaseDate: dateToInput(new Date(now - 8 * DAYS)),
+    purchasedFrom: "Private seller",
+    notes: "",
   });
 
-  const listed = await db.account.create({
-    data: {
-      ownerId: owner.id,
-      gameName: "Mobile Legends",
-      gameNameNormalized: "mobile legends",
-      accountName: "Mythical Glory Account",
-      description: "High-rank account with a broad hero and skin collection.",
-      purchasePrice: 500_000n,
-      purchaseDate: new Date(now - 20 * DAYS),
-      purchasedFrom: "Community seller",
-      listings: {
-        create: [
-          {
-            marketplace: "Instagram",
-            marketplaceNormalized: "instagram",
-            listingPrice: 800_000n,
-            listedAt: new Date(now - 7 * DAYS),
-          },
-          {
-            marketplace: "Facebook",
-            marketplaceNormalized: "facebook",
-            listingPrice: 850_000n,
-            listedAt: new Date(now - 6 * DAYS),
-          },
-          {
-            marketplace: "Itemku",
-            marketplaceNormalized: "itemku",
-            listingPrice: 900_000n,
-            listedAt: new Date(now - 5 * DAYS),
-          },
-        ],
-      },
-    },
+  const listed = await createAccount(owner.id, {
+    gameName: "Mobile Legends",
+    accountName: "Mythical Glory Account",
+    description: "High-rank account with a broad hero and skin collection.",
+    imageUrl: "",
+    purchasePrice: "500000",
+    purchaseDate: dateToInput(new Date(now - 20 * DAYS)),
+    purchasedFrom: "Community seller",
+    notes: "",
   });
+  for (const [index, marketplace] of ["Instagram", "Facebook", "Itemku"].entries()) {
+    await createListing(owner.id, {
+      accountId: listed.id,
+      marketplace,
+      listingPrice: String(800_000 + index * 50_000),
+      listingUrl: "",
+      listedAt: dateToInput(new Date(now - (7 - index) * DAYS)),
+      notes: "",
+    });
+  }
 
-  const sold = await db.account.create({
-    data: {
-      ownerId: owner.id,
-      gameName: "Valorant",
-      gameNameNormalized: "valorant",
-      accountName: "Immortal — Premium Collection",
-      description: "Competitive account with documented purchase history.",
-      purchasePrice: 1_000_000n,
-      purchaseDate: new Date(now - 45 * DAYS),
-      purchasedFrom: "Trusted reseller",
-      listings: {
-        create: [
-          {
-            marketplace: "Discord",
-            marketplaceNormalized: "discord",
-            listingPrice: 1_500_000n,
-            listedAt: new Date(now - 14 * DAYS),
-            status: "SOLD",
-            closedAt: new Date(now - 2 * DAYS),
-          },
-          {
-            marketplace: "Telegram",
-            marketplaceNormalized: "telegram",
-            listingPrice: 1_550_000n,
-            listedAt: new Date(now - 13 * DAYS),
-            status: "CLOSED",
-            closedAt: new Date(now - 2 * DAYS),
-          },
-        ],
-      },
-    },
-    include: { listings: true },
+  const sold = await createAccount(owner.id, {
+    gameName: "Valorant",
+    accountName: "Immortal — Premium Collection",
+    description: "Competitive account with documented purchase history.",
+    imageUrl: "",
+    purchasePrice: "1000000",
+    purchaseDate: dateToInput(new Date(now - 45 * DAYS)),
+    purchasedFrom: "Trusted reseller",
+    notes: "",
   });
-  const winningListing = sold.listings.find((listing) => listing.status === "SOLD")!;
-  const metrics = calculateSaleMetrics({
-    purchasePrice: sold.purchasePrice,
-    sellingPrice: 1_400_000n,
-    expenses: [25_000n, 10_000n],
+  const winningListing = await createListing(owner.id, {
+    accountId: sold.id,
+    marketplace: "Discord",
+    listingPrice: "1500000",
+    listingUrl: "",
+    listedAt: dateToInput(new Date(now - 14 * DAYS)),
+    notes: "",
   });
-  await db.sale.create({
-    data: {
-      accountId: sold.id,
-      listingId: winningListing.id,
-      marketplace: winningListing.marketplace,
-      marketplaceNormalized: winningListing.marketplaceNormalized,
-      purchasePrice: sold.purchasePrice,
-      originalListingPrice: winningListing.listingPrice,
-      sellingPrice: 1_400_000n,
-      totalExpenses: metrics.totalExpenses,
-      netProfit: metrics.netProfit,
-      soldAt: new Date(now - 2 * DAYS),
-      notes: "Buyer completed payment before account handover.",
-      expenses: {
-        create: [
-          { name: "Middleman fee", amount: 25_000n },
-          { name: "Transfer fee", amount: 10_000n },
-        ],
-      },
-    },
+  await createListing(owner.id, {
+    accountId: sold.id,
+    marketplace: "Telegram",
+    listingPrice: "1550000",
+    listingUrl: "",
+    listedAt: dateToInput(new Date(now - 13 * DAYS)),
+    notes: "",
+  });
+  await confirmSale(owner.id, {
+    listingId: winningListing.id,
+    sellingPrice: "1400000",
+    soldAt: dateToInput(new Date(now - 2 * DAYS)),
+    notes: "Buyer completed payment before account handover.",
+    expenses: [
+      { name: "Middleman fee", amount: "25000" },
+      { name: "Transfer fee", amount: "10000" },
+    ],
   });
 
   console.log(
-    `Created development inventory: ${[available, listed, sold].map((account) => account.accountName).join(", ")}`,
+    `Created development inventory: ${[available, listed, sold].map((account) => `${account.accountCode} — ${account.accountName}`).join(", ")}`,
   );
 }
 

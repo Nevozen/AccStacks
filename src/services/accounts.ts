@@ -1,4 +1,5 @@
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
+import { buildAccountCode, gamePrefix } from "@/lib/codes";
 import {
   accountInputSchema,
   stockQuerySchema,
@@ -38,20 +39,67 @@ function categoryWhere(
 
 export async function createAccount(ownerId: string, input: AccountInput) {
   const data = accountInputSchema.parse(input);
-  return db.account.create({
-    data: {
-      ownerId,
-      gameName: normalizeName(data.gameName),
-      gameNameNormalized: normalizeCategory(data.gameName),
-      accountName: data.accountName,
-      description: emptyToNull(data.description),
-      imageUrl: emptyToNull(data.imageUrl),
-      purchasePrice: BigInt(data.purchasePrice),
-      purchaseDate: dateInputToUtc(data.purchaseDate),
-      purchasedFrom: emptyToNull(data.purchasedFrom),
-      notes: emptyToNull(data.notes),
-    },
-  });
+  const gameName = normalizeName(data.gameName);
+  const gameNameNormalized = normalizeCategory(data.gameName);
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      return await db.$transaction(
+        async (tx) => {
+          const counters = await tx.gameCounter.findMany({ where: { ownerId } });
+          const existing = counters.find(
+            (counter) => counter.gameNameNormalized === gameNameNormalized,
+          );
+          let prefix: string;
+          let sequence: number;
+
+          if (existing) {
+            const updated = await tx.gameCounter.update({
+              where: { id: existing.id },
+              data: { nextNumber: { increment: 1 } },
+            });
+            prefix = existing.prefix;
+            sequence = updated.nextNumber - 1;
+          } else {
+            prefix = gamePrefix(
+              gameName,
+              counters.map((counter) => counter.prefix),
+            );
+            sequence = 1;
+            await tx.gameCounter.create({
+              data: { ownerId, gameNameNormalized, prefix, nextNumber: 2 },
+            });
+          }
+
+          return tx.account.create({
+            data: {
+              ownerId,
+              accountCode: buildAccountCode(prefix, sequence),
+              gameName,
+              gameNameNormalized,
+              accountName: data.accountName,
+              description: emptyToNull(data.description),
+              imageUrl: emptyToNull(data.imageUrl),
+              purchasePrice: BigInt(data.purchasePrice),
+              purchaseDate: dateInputToUtc(data.purchaseDate),
+              purchasedFrom: emptyToNull(data.purchasedFrom),
+              notes: emptyToNull(data.notes),
+            },
+          });
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        (error.code === "P2002" || error.code === "P2034")
+      ) {
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new AppError("CONFLICT", "Unable to allocate a unique account code. Please retry.");
 }
 
 export async function updateAccount(ownerId: string, accountId: string, input: AccountInput) {
@@ -107,6 +155,7 @@ export async function getStocksData(ownerId: string, query: StockQuery) {
           { accountName: { contains: q, mode: "insensitive" } },
           { gameName: { contains: q, mode: "insensitive" } },
           { id: { contains: q, mode: "insensitive" } },
+          { accountCode: { contains: q, mode: "insensitive" } },
         ],
       }
     : {};

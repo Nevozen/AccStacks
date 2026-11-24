@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
 import { createTestUser, testDb } from "./client";
 
@@ -5,6 +6,7 @@ async function createAccount(ownerId: string, purchasePrice = 500_000n) {
   return testDb.account.create({
     data: {
       ownerId,
+      accountCode: `TEST-${randomUUID()}`,
       gameName: "Mobile Legends",
       gameNameNormalized: "mobile legends",
       accountName: "Integrity Test Account",
@@ -15,9 +17,12 @@ async function createAccount(ownerId: string, purchasePrice = 500_000n) {
 }
 
 async function createListing(accountId: string) {
+  const account = await testDb.account.findUniqueOrThrow({ where: { id: accountId } });
+  const count = await testDb.listing.count({ where: { accountId } });
   return testDb.listing.create({
     data: {
       accountId,
+      listingCode: `${account.accountCode}-${count + 1}`,
       marketplace: "Instagram",
       marketplaceNormalized: "instagram",
       listingPrice: 800_000n,

@@ -8,6 +8,7 @@ export function toEligibleAccountDto(
 ): EligibleAccountDto {
   return {
     id: account.id,
+    accountCode: account.accountCode,
     gameName: account.gameName,
     accountName: account.accountName,
     imageUrl: account.imageUrl,
@@ -32,6 +33,7 @@ export function toListingDto(
   });
   return {
     id: listing.id,
+    listingCode: listing.listingCode,
     marketplace: listing.marketplace,
     marketplaceNormalized: listing.marketplaceNormalized,
     listingPrice: listing.listingPrice.toString(),
@@ -45,6 +47,7 @@ export function toListingDto(
     estimatedRoi: metrics.estimatedRoi,
     account: {
       id: listing.account.id,
+      accountCode: listing.account.accountCode,
       gameName: listing.account.gameName,
       accountName: listing.account.accountName,
       description: listing.account.description,

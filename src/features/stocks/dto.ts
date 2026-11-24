@@ -7,6 +7,7 @@ import type { AccountDetailDto, StockAccountDto } from "./types";
 export function toStockAccountDto(account: StockAccountRecord, timezone: string): StockAccountDto {
   return {
     id: account.id,
+    accountCode: account.accountCode,
     gameName: account.gameName,
     accountName: account.accountName,
     description: account.description,
@@ -41,6 +42,7 @@ export function toAccountDetailDto(
     ),
     listings: account.listings.map((listing) => ({
       id: listing.id,
+      listingCode: listing.listingCode,
       marketplace: listing.marketplace,
       listingPrice: listing.listingPrice.toString(),
       listingUrl: listing.listingUrl,

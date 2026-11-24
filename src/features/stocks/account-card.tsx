@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/dates";
-import { cn, truncateMiddle } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { StockAccountDto } from "./types";
 
 export function AccountCard({
@@ -74,8 +74,11 @@ export function AccountCard({
           </span>
         </div>
         <div className="flex items-center justify-between gap-2 border-t pt-2">
-          <span className="font-mono text-[10px] text-muted-foreground" title={account.id}>
-            {truncateMiddle(account.id)}
+          <span
+            className="font-mono text-[10px] text-muted-foreground"
+            title={`Internal ID: ${account.id}`}
+          >
+            {account.accountCode}
           </span>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="sm" onClick={onView}>
