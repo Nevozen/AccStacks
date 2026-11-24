@@ -34,3 +34,4 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Required owner capital with retained-profit, cash, asset, and estimated-equity reporting.
 - Production-server Playwright execution for stable end-to-end verification.
 - Inline listing expansion with unstack/restack motion and Close all instead of a side sheet.
+- Expanded groups now lead the listing grid, while single-listing accounts show direct actions without Show all.

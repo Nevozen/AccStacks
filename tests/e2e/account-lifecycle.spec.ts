@@ -45,9 +45,9 @@ test("complete account trading lifecycle", async ({ page }) => {
   await firstListingDialog.getByLabel("Listing price").fill("800000");
   await firstListingDialog.getByRole("button", { name: "Create listing", exact: true }).click();
   await expect(firstListingDialog).toBeHidden();
-  await expect(
-    page.getByTestId("listing-account-card").filter({ hasText: "Instagram" }),
-  ).toBeVisible();
+  const singleListingCard = page.getByTestId("listing-card").filter({ hasText: "Instagram" });
+  await expect(singleListingCard).toBeVisible();
+  await expect(singleListingCard).not.toContainText("Show all listings");
 
   await page.getByRole("button", { name: "Create New Listing", exact: true }).click();
   const secondListingDialog = page.getByRole("dialog", { name: "Create new listing" });
@@ -65,6 +65,10 @@ test("complete account trading lifecycle", async ({ page }) => {
   await expect(page.getByTestId("listing-group-expansion")).toBeVisible();
   await expect(page.getByTestId("listing-group-expansion")).toHaveClass(
     /listing-unstack-container/,
+  );
+  await expect(page.getByTestId("listings-grid").locator("> :first-child")).toHaveAttribute(
+    "data-testid",
+    "listing-group-expansion",
   );
   await expect(page.getByTestId("listing-card")).toHaveCount(2);
   await page.getByRole("button", { name: "Close all" }).click();

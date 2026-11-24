@@ -58,7 +58,7 @@ Manage listings across multiple external marketplaces from one workspace.
 - Enter custom marketplace names, such as Instagram, Facebook, Shopee, or Itemku.
 - Set individual listing prices and optionally attach listing URLs.
 - List the same account on multiple marketplaces simultaneously without duplicate inventory cards.
-- Expand a stacked account card inline with unstack motion to manage every independent marketplace listing and linked listing ID, then use Close all to restore the stack.
+- Expand a multi-listing account at the top of the grid with unstack motion to manage every independent marketplace listing and linked listing ID, then use Close all to restore the stack; single listings show direct actions.
 - View estimated profit before a sale.
 - Edit, delete, or mark active listings as sold.
 

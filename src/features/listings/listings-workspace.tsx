@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { SaleConfirmationDialog } from "@/features/sales/sale-confirmation-dialog";
 import { cancelListingAction } from "./actions";
 import { groupListings } from "./groups";
+import { ListingCard } from "./listing-card";
 import { ListingGroupCard } from "./listing-group-card";
 import { ListingGroupExpansion } from "./listing-group-expansion";
 import { ListingFormDialog } from "./listing-form-dialog";
@@ -78,6 +79,12 @@ export function ListingsWorkspace({
   const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const groups = groupListings(listings);
+  const orderedGroups = expandedAccountId
+    ? [
+        ...groups.filter((group) => group.account.id === expandedAccountId),
+        ...groups.filter((group) => group.account.id !== expandedAccountId),
+      ]
+    : groups;
 
   function updateParams(values: Record<string, string | null>, resetPage = true) {
     const params = new URLSearchParams(searchParams.toString());
@@ -236,8 +243,9 @@ export function ListingsWorkspace({
       ) : (
         <div
           className={cn("grid gap-3 md:grid-cols-2 2xl:grid-cols-3", navigating && "opacity-70")}
+          data-testid="listings-grid"
         >
-          {groups.map((group) =>
+          {orderedGroups.map((group) =>
             expandedAccountId === group.account.id ? (
               <ListingGroupExpansion
                 key={group.account.id}
@@ -257,6 +265,18 @@ export function ListingsWorkspace({
                   setExpandedAccountId(null);
                   setSelling(listing);
                 }}
+              />
+            ) : group.listings.length === 1 ? (
+              <ListingCard
+                key={group.account.id}
+                listing={group.listings[0]!}
+                timezone={timezone}
+                onEdit={() => {
+                  setEditing(group.listings[0]!);
+                  setFormOpen(true);
+                }}
+                onDelete={() => setDeleting(group.listings[0]!)}
+                onMarkSold={() => setSelling(group.listings[0]!)}
               />
             ) : (
               <ListingGroupCard

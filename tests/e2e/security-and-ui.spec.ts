@@ -60,7 +60,7 @@ test("allows a loss sale with explicit confirmation and prevents duplicate submi
   await createAccountAndListingFixture(owner.user.id);
   await signIn(page, owner);
   await page.goto("/listings");
-  await page.getByRole("button", { name: "Show all listings (1)" }).click();
+  await expect(page.getByRole("button", { name: "Show all listings (1)" })).toHaveCount(0);
   await page.getByTestId("listing-card").getByRole("button", { name: "Mark as Sold" }).click();
   const dialog = page.getByRole("dialog", { name: "Confirm account sale" });
   await dialog.getByLabel("Actual selling price").fill("400000");
