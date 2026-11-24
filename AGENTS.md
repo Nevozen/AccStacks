@@ -39,7 +39,23 @@ Authenticate and authorize every private operation. Never trust client user IDs,
 
 Run `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, relevant unit/integration/E2E tests, and `pnpm build` at milestones. Never claim an unexecuted check passed. Integration/E2E tests require Dockerized PostgreSQL and must never target development or production data.
 
-Use focused GitHub Flow branches and actual incremental commits in the form `type(scope): Capitalized imperative summary`. Inspect status and diffs, stage only related files, run relevant checks, and do not bypass hooks. Do not rewrite history, force-push, delete user work, or create empty/artificial commits. For the current `feat/initial-application` workflow, push every successful feature commit, merge each completed and validated feature into `main`, push `main`, and continue to the next feature without stopping. Releases and external deployments still require explicit approval. Preserve existing documentation and update it only to describe verified behavior.
+Use focused GitHub Flow branches and actual incremental commits in the form `type(scope): Capitalized imperative summary`. Inspect status and diffs, stage only related files, run relevant checks, and do not bypass hooks. Do not rewrite history, force-push, delete user work, or create empty/artificial commits. Preserve existing documentation and update it only to describe verified behavior.
+
+### Required GitHub workflow for this repository
+
+- `origin` is `https://github.com/Nevozen/AccStacks.git`, `main` is the stable branch, and `feat/initial-application` is the ongoing integration branch.
+- After every coherent completed feature or part, inspect `git status` and diffs, run relevant validation, stage only related files, inspect `git diff --cached --check`, and create a real Git commit. Do not leave completed work only in the local working tree.
+- Commit messages use English imperative Conventional Commits: `type(scope): Capitalized imperative summary`, preferably at most 72 characters. Include the Devin trailer when applicable: `Generated with [Devin](https://devin.ai)` and `Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com>`.
+- Immediately after each successful feature commit, push `feat/initial-application` to `origin`, merge that commit into `main` with a fast-forward merge, push `main` to `origin`, switch back to `feat/initial-application`, and continue to the next feature without stopping. Both branches must point to the same commit after each completed merge.
+- Use this exact merge sequence when the working tree is clean and history has not diverged:
+  1. `git fetch origin`
+  2. `git switch main`
+  3. `git merge --ff-only origin/main`
+  4. `git merge --ff-only feat/initial-application`
+  5. `git push origin main`
+  6. `git switch feat/initial-application`
+- If checks fail, history diverges, or a fast-forward is impossible, stop and report the situation rather than forcing a merge, bypassing hooks, rewriting history, or discarding user changes. Never commit secrets, `.env` files, generated build artifacts, or unrelated changes.
+- Releases, external deployments, force-pushes, history rewrites, and merges using a different strategy require explicit user approval. Remote CI was last blocked by a GitHub account billing issue on 2026-11-24; all local checks passed. Re-run CI after that external issue is resolved rather than claiming remote checks passed.
 
 A task is done only when functionality, tests, security, documentation, and meaningful Git commits accurately reflect the implemented work, with any environment limitation disclosed.
 
