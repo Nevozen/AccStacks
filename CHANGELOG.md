@@ -13,3 +13,5 @@ All notable changes to AccStacks are documented in this file. The format follows
 - Private Auth.js sign-in, persistent JWT sessions, protected routes, and login throttling.
 - Responsive AccStacks dashboard shell with light, dark, and system themes.
 - Reusable accessible form, navigation, dialog, table, feedback, and status components.
+- Complete account inventory creation, editing, archival, filtering, sorting, pagination, and detail history.
+- Available, listed, and sold categories with persistent grid/table preferences and sold-record protections.

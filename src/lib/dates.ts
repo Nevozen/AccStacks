@@ -18,8 +18,14 @@ export function assertTimezone(timezone: string) {
   return timezone;
 }
 
+function requiredIsoDate(value: DateTime) {
+  const result = value.toISODate();
+  if (!result) throw new Error("Invalid date");
+  return result;
+}
+
 export function todayInput(timezone = DEFAULT_TIMEZONE, now = DateTime.now()) {
-  return now.setZone(timezone).toISODate();
+  return requiredIsoDate(now.setZone(timezone));
 }
 
 export function dateInputToUtc(value: string, timezone = DEFAULT_TIMEZONE) {
@@ -29,7 +35,7 @@ export function dateInputToUtc(value: string, timezone = DEFAULT_TIMEZONE) {
 }
 
 export function dateToInput(value: Date, timezone = DEFAULT_TIMEZONE) {
-  return DateTime.fromJSDate(value).setZone(timezone).toISODate();
+  return requiredIsoDate(DateTime.fromJSDate(value).setZone(timezone));
 }
 
 export function formatDate(value: Date, timezone = DEFAULT_TIMEZONE) {

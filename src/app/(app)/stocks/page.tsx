@@ -1,63 +1,70 @@
 import type { Metadata } from "next";
-import { PackageOpen } from "lucide-react";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Money } from "@/components/shared/money";
-import { PageHeader } from "@/components/shared/page-header";
-import { AccountStatusBadge } from "@/components/shared/status-badge";
-import { Card } from "@/components/ui/card";
-import { deriveAccountStatus } from "@/lib/account-status";
+import { StocksWorkspace } from "@/features/stocks/stocks-workspace";
+import { toAccountDetailDto, toStockAccountDto } from "@/features/stocks/dto";
+import { AppError } from "@/lib/errors";
+import { stockQuerySchema } from "@/schemas/account";
+import { getAccountDetail, getAccountGames, getStocksData } from "@/services/accounts";
 import { db } from "@/server/db";
 import { requireUser } from "@/server/session";
 
 export const metadata: Metadata = { title: "Stocks" };
 
-export default async function StocksPage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function StocksPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const user = await requireUser();
-  const accounts = await db.account.findMany({
-    where: { ownerId: user.id, deletedAt: null },
-    include: {
-      sale: { select: { id: true } },
-      listings: { where: { status: "ACTIVE" }, select: { id: true } },
-    },
-    orderBy: { createdAt: "desc" },
+  const params = await searchParams;
+  const settings = await db.userSettings.upsert({
+    where: { userId: user.id },
+    update: {},
+    create: { userId: user.id },
   });
+  const query = stockQuerySchema.parse({
+    q: first(params.q),
+    game: first(params.game),
+    category: first(params.category),
+    sort: first(params.sort),
+    page: first(params.page),
+    view: first(params.view) ?? settings.preferredStockView.toLowerCase(),
+  });
+  const accountId = first(params.account);
+  const [data, games, detail] = await Promise.all([
+    getStocksData(user.id, query),
+    getAccountGames(user.id),
+    accountId
+      ? getAccountDetail(user.id, accountId).catch((error: unknown) => {
+          if (error instanceof AppError && error.code === "NOT_FOUND") return null;
+          throw error;
+        })
+      : Promise.resolve(null),
+  ]);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Stocks"
-        description={`${accounts.length} account${accounts.length === 1 ? "" : "s"} in inventory.`}
-      />
-      {accounts.length === 0 ? (
-        <EmptyState
-          icon={PackageOpen}
-          title="No accounts yet"
-          description="Purchased game accounts will appear in your inventory."
-        />
-      ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {accounts.map((account) => (
-            <Card key={account.id} className="p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-xs text-muted-foreground">{account.gameName}</p>
-                  <h2 className="mt-1 truncate font-medium">{account.accountName}</h2>
-                </div>
-                <AccountStatusBadge
-                  status={deriveAccountStatus({
-                    sold: Boolean(account.sale),
-                    activeListingCount: account.listings.length,
-                  })}
-                />
-              </div>
-              <div className="mt-4 flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Purchase price</span>
-                <Money value={account.purchasePrice} />
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+    <StocksWorkspace
+      accounts={data.accounts.map((account) => toStockAccountDto(account, settings.timezone))}
+      counts={data.counts}
+      totalAccounts={data.totalAccounts}
+      totalFiltered={data.totalFiltered}
+      page={data.page}
+      totalPages={data.totalPages}
+      query={{
+        q: query.q,
+        game: query.game,
+        category: query.category,
+        sort: query.sort,
+        view: query.view,
+      }}
+      games={games}
+      detail={detail ? toAccountDetailDto(detail, settings.timezone) : null}
+      timezone={settings.timezone}
+    />
   );
 }

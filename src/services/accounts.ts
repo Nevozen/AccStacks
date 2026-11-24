@@ -1,0 +1,183 @@
+import type { Prisma } from "@/generated/prisma/client";
+import {
+  accountInputSchema,
+  stockQuerySchema,
+  type AccountInput,
+  type StockQuery,
+} from "@/schemas/account";
+import { AppError } from "@/lib/errors";
+import { dateInputToUtc } from "@/lib/dates";
+import { normalizeCategory, normalizeName } from "@/lib/normalization";
+import { db } from "@/server/db";
+
+const stockAccountInclude = {
+  sale: { select: { id: true, netProfit: true, soldAt: true } },
+  _count: { select: { listings: { where: { status: "ACTIVE" as const } } } },
+} satisfies Prisma.AccountInclude;
+
+export type StockAccountRecord = Prisma.AccountGetPayload<{ include: typeof stockAccountInclude }>;
+
+const accountDetailInclude = {
+  listings: { orderBy: { listedAt: "desc" as const } },
+  sale: { include: { expenses: { orderBy: { createdAt: "asc" as const } }, listing: true } },
+  _count: { select: { listings: { where: { status: "ACTIVE" as const } } } },
+} satisfies Prisma.AccountInclude;
+
+function emptyToNull(value?: string) {
+  return value?.trim() ? value.trim() : null;
+}
+
+function categoryWhere(
+  category: "all" | "available" | "listed" | "sold",
+): Prisma.AccountWhereInput {
+  if (category === "available") return { sale: null, listings: { none: { status: "ACTIVE" } } };
+  if (category === "listed") return { sale: null, listings: { some: { status: "ACTIVE" } } };
+  if (category === "sold") return { sale: { isNot: null } };
+  return {};
+}
+
+export async function createAccount(ownerId: string, input: AccountInput) {
+  const data = accountInputSchema.parse(input);
+  return db.account.create({
+    data: {
+      ownerId,
+      gameName: normalizeName(data.gameName),
+      gameNameNormalized: normalizeCategory(data.gameName),
+      accountName: data.accountName,
+      description: emptyToNull(data.description),
+      imageUrl: emptyToNull(data.imageUrl),
+      purchasePrice: BigInt(data.purchasePrice),
+      purchaseDate: dateInputToUtc(data.purchaseDate),
+      purchasedFrom: emptyToNull(data.purchasedFrom),
+      notes: emptyToNull(data.notes),
+    },
+  });
+}
+
+export async function updateAccount(ownerId: string, accountId: string, input: AccountInput) {
+  const data = accountInputSchema.parse(input);
+  const account = await db.account.findFirst({
+    where: { id: accountId, ownerId, deletedAt: null },
+    include: { sale: { select: { id: true } } },
+  });
+  if (!account) throw new AppError("NOT_FOUND", "Account not found");
+  if (account.sale) throw new AppError("CONFLICT", "Sold accounts are read-only");
+
+  return db.account.update({
+    where: { id: account.id },
+    data: {
+      gameName: normalizeName(data.gameName),
+      gameNameNormalized: normalizeCategory(data.gameName),
+      accountName: data.accountName,
+      description: emptyToNull(data.description),
+      imageUrl: emptyToNull(data.imageUrl),
+      purchasePrice: BigInt(data.purchasePrice),
+      purchaseDate: dateInputToUtc(data.purchaseDate),
+      purchasedFrom: emptyToNull(data.purchasedFrom),
+      notes: emptyToNull(data.notes),
+    },
+  });
+}
+
+export async function archiveAccount(ownerId: string, accountId: string) {
+  return db.$transaction(async (tx) => {
+    const account = await tx.account.findFirst({
+      where: { id: accountId, ownerId, deletedAt: null },
+      include: {
+        sale: { select: { id: true } },
+        _count: { select: { listings: { where: { status: "ACTIVE" } } } },
+      },
+    });
+    if (!account) throw new AppError("NOT_FOUND", "Account not found");
+    if (account.sale)
+      throw new AppError("CONFLICT", "Sold accounts must remain in financial history");
+    if (account._count.listings > 0) {
+      throw new AppError("CONFLICT", "Cancel all active listings before deleting this account");
+    }
+
+    return tx.account.update({ where: { id: account.id }, data: { deletedAt: new Date() } });
+  });
+}
+
+export async function getStocksData(ownerId: string, query: StockQuery) {
+  const { q, game, category, sort, page } = stockQuerySchema.parse(query);
+  const searchWhere: Prisma.AccountWhereInput = q
+    ? {
+        OR: [
+          { accountName: { contains: q, mode: "insensitive" } },
+          { gameName: { contains: q, mode: "insensitive" } },
+          { id: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+  const baseWhere: Prisma.AccountWhereInput = {
+    ownerId,
+    deletedAt: null,
+    ...(game ? { gameNameNormalized: normalizeCategory(game) } : {}),
+    ...searchWhere,
+  };
+  const where: Prisma.AccountWhereInput = { ...baseWhere, ...categoryWhere(category) };
+  const orderBy: Prisma.AccountOrderByWithRelationInput[] =
+    sort === "oldest"
+      ? [{ purchaseDate: "asc" }]
+      : sort === "purchaseHigh"
+        ? [{ purchasePrice: "desc" }, { purchaseDate: "desc" }]
+        : sort === "purchaseLow"
+          ? [{ purchasePrice: "asc" }, { purchaseDate: "desc" }]
+          : sort === "name"
+            ? [{ accountName: "asc" }]
+            : sort === "saleNewest"
+              ? [{ sale: { soldAt: "desc" } }, { purchaseDate: "desc" }]
+              : sort === "profitHigh"
+                ? [{ sale: { netProfit: "desc" } }, { purchaseDate: "desc" }]
+                : sort === "profitLow"
+                  ? [{ sale: { netProfit: "asc" } }, { purchaseDate: "desc" }]
+                  : [{ purchaseDate: "desc" }, { createdAt: "desc" }];
+  const pageSize = 12;
+  const [totalAccounts, totalFiltered, all, available, listed, sold] = await Promise.all([
+    db.account.count({ where: { ownerId, deletedAt: null } }),
+    db.account.count({ where }),
+    db.account.count({ where: baseWhere }),
+    db.account.count({ where: { ...baseWhere, ...categoryWhere("available") } }),
+    db.account.count({ where: { ...baseWhere, ...categoryWhere("listed") } }),
+    db.account.count({ where: { ...baseWhere, ...categoryWhere("sold") } }),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const accounts = await db.account.findMany({
+    where,
+    include: stockAccountInclude,
+    orderBy,
+    skip: (currentPage - 1) * pageSize,
+    take: pageSize,
+  });
+
+  return {
+    accounts,
+    counts: { all, available, listed, sold },
+    totalAccounts,
+    totalFiltered,
+    page: currentPage,
+    pageSize,
+    totalPages,
+  };
+}
+
+export async function getAccountDetail(ownerId: string, accountId: string) {
+  const account = await db.account.findFirst({
+    where: { id: accountId, ownerId, deletedAt: null },
+    include: accountDetailInclude,
+  });
+  if (!account) throw new AppError("NOT_FOUND", "Account not found");
+  return account;
+}
+
+export async function getAccountGames(ownerId: string) {
+  const games = await db.account.findMany({
+    where: { ownerId, deletedAt: null },
+    select: { gameName: true, gameNameNormalized: true },
+    distinct: ["gameNameNormalized"],
+    orderBy: { gameName: "asc" },
+  });
+  return games.map((game) => game.gameName);
+}
