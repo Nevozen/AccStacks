@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -108,7 +109,7 @@ model Listing {
   sale                  Sale?
 
   @@unique([id, accountId])
-  @@unique([accountId, listingCode])
+  @@unique([accountId, listingCode], map: "Listing_live_code_key", where: raw("\"status\" <> 'CANCELLED'::\"ListingStatus\""))
   @@index([accountId, status])
   @@index([marketplaceNormalized, status])
   @@index([listedAt])

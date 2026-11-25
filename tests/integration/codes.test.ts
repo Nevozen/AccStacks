@@ -34,7 +34,7 @@ describe("public code allocation", () => {
     expect((await createAccount(secondUser.id, input("Wuthering Waves"))).accountCode).toBe("WW1");
   });
 
-  it("links listing codes and never reuses cancelled listing numbers", async () => {
+  it("reuses the lowest free listing suffix without changing retained listings", async () => {
     const user = await createTestUser();
     const account = await createAccount(user.id, input("Wuthering Waves"));
     const first = await createListing(user.id, {
@@ -64,7 +64,31 @@ describe("public code allocation", () => {
       listedAt: "2026-11-04",
       notes: "",
     });
-    expect(third.listingCode).toBe("WW1-3");
+    expect(third.listingCode).toBe("WW1-1");
+    expect(third.id).not.toBe(first.id);
+    expect(await testDb.listing.findUnique({ where: { id: first.id } })).toMatchObject({
+      status: "CANCELLED",
+      listingCode: "WW1-1",
+    });
+    expect(await testDb.listing.findUnique({ where: { id: second.id } })).toMatchObject({
+      status: "ACTIVE",
+      listingCode: "WW1-2",
+    });
+  });
+
+  it("resets to suffix one and keeps codes unique during concurrent relisting", async () => {
+    const user = await createTestUser();
+    const account = await createAccount(user.id, input("Wuthering Waves"));
+    const draft = { accountId: account.id, listingPrice: "800000", listedAt: "2026-11-02" };
+    const original = await createListing(user.id, { ...draft, marketplace: "Instagram" });
+    await cancelListing(user.id, original.id);
+
+    const relisted = await Promise.all(
+      ["Facebook", "Itemku"].map((marketplace) =>
+        createListing(user.id, { ...draft, marketplace }),
+      ),
+    );
+    expect(relisted.map(({ listingCode }) => listingCode).sort()).toEqual(["WW1-1", "WW1-2"]);
   });
 
   it("allocates unique account codes during concurrent creation", async () => {

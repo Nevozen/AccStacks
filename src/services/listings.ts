@@ -38,19 +38,29 @@ function emptyToNull(value?: string) {
 export async function createListing(ownerId: string, input: ListingInput) {
   const data = listingInputSchema.parse(input);
   return db.$transaction(async (tx) => {
-    const account = await tx.account.findFirst({
-      where: { id: data.accountId, ownerId, deletedAt: null },
+    const locked = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "Account"
+      WHERE id = ${data.accountId} AND "ownerId" = ${ownerId} AND "deletedAt" IS NULL
+      FOR UPDATE
+    `;
+    if (!locked.length) throw new AppError("NOT_FOUND", "Eligible account not found");
+    const account = await tx.account.findUniqueOrThrow({
+      where: { id: data.accountId },
       include: { sale: { select: { id: true } } },
     });
-    if (!account) throw new AppError("NOT_FOUND", "Eligible account not found");
     if (account.sale) throw new AppError("CONFLICT", "Sold accounts cannot be listed again");
-    await tx.$queryRaw`SELECT id FROM "Account" WHERE id = ${account.id} FOR UPDATE`;
-    const listingCount = await tx.listing.count({ where: { accountId: account.id } });
+    const retainedListings = await tx.listing.findMany({
+      where: { accountId: account.id, status: { not: "CANCELLED" } },
+      select: { listingCode: true },
+    });
+    const used = new Set(retainedListings.map(({ listingCode }) => listingCode));
+    let sequence = 1;
+    while (used.has(buildListingCode(account.accountCode, sequence))) sequence += 1;
 
     return tx.listing.create({
       data: {
         accountId: account.id,
-        listingCode: buildListingCode(account.accountCode, listingCount + 1),
+        listingCode: buildListingCode(account.accountCode, sequence),
         marketplace: normalizeName(data.marketplace),
         marketplaceNormalized: normalizeCategory(data.marketplace),
         listingPrice: BigInt(data.listingPrice),

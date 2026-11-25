@@ -40,6 +40,8 @@ A confirmed sale locks the account row in a serializable transaction, validates 
 
 Deleting a listing means `CANCELLED` in AccStacks, not deleting the account or its history. Account deletion is soft archival and is allowed only for unsold accounts with no active listings. Completed sales are read-only.
 
+A new listing takes the lowest unused suffix for the account. Cancelling `WW1-1` allows a new listing to use `WW1-1` again without renumbering other listings. Cancelled records retain the original code and are distinguished from active records by status and internal ID.
+
 Closing or cancelling a listing never removes an advertisement from an external marketplace. Users must remove those advertisements manually.
 
 ## Capital, assets, cash, and equity
