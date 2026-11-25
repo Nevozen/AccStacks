@@ -22,6 +22,7 @@ import { MoneyInput } from "@/components/shared/money-input";
 import { GameNameInput } from "@/components/shared/game-name-input";
 import { LocalImageInput } from "@/components/shared/local-image-input";
 import { todayInput } from "@/lib/dates";
+import { moneyToDecimal, type Currency } from "@/lib/money";
 import { accountInputSchema, type AccountInput } from "@/schemas/account";
 import { createAccountAction, updateAccountAction } from "./actions";
 import type { StockAccountDto } from "./types";
@@ -40,11 +41,13 @@ const emptyValues: AccountInput = {
 export function AccountFormDialog({
   account,
   games,
+  currency,
   open,
   onOpenChange,
 }: {
   account?: StockAccountDto | null;
   games: string[];
+  currency: Currency;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -52,7 +55,7 @@ export function AccountFormDialog({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageRemoved, setImageRemoved] = useState(false);
   const form = useForm<AccountInput>({
-    resolver: zodResolver(accountInputSchema),
+    resolver: zodResolver(accountInputSchema(currency)),
     defaultValues: emptyValues,
   });
 
@@ -65,14 +68,14 @@ export function AccountFormDialog({
             accountName: account.accountName,
             description: account.description ?? "",
             imageUrl: account.imageUrl ?? "",
-            purchasePrice: account.purchasePrice,
+            purchasePrice: moneyToDecimal(BigInt(account.purchasePrice), currency),
             purchaseDate: account.purchaseDateInput,
             purchasedFrom: account.purchasedFrom ?? "",
             notes: account.notes ?? "",
           }
         : { ...emptyValues, purchaseDate: todayInput() },
     );
-  }, [account, form, open]);
+  }, [account, currency, form, open]);
 
   function closeDialog(value: boolean) {
     if (!value) {
@@ -162,9 +165,10 @@ export function AccountFormDialog({
               name="purchasePrice"
               render={({ field }) => (
                 <MoneyInput
+                  currency={currency}
                   value={field.value}
                   onChange={field.onChange}
-                  placeholder="500.000"
+                  placeholder={currency === "IDR" ? "500.000" : "50.00"}
                   disabled={pending}
                   aria-invalid={Boolean(errors.purchasePrice)}
                 />

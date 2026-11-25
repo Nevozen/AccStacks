@@ -32,7 +32,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 import { todayInput } from "@/lib/dates";
 import { calculateListingMetrics } from "@/lib/finance";
-import { formatPercentage } from "@/lib/money";
+import { formatPercentage, moneyToDecimal, parseMoneyInput, type Currency } from "@/lib/money";
 import { normalizeCategory } from "@/lib/normalization";
 import { cn } from "@/lib/utils";
 import { listingInputSchema, type ListingInput } from "@/schemas/listing";
@@ -44,6 +44,7 @@ export function ListingFormDialog({
   initialAccount,
   initialAccounts,
   marketplaces,
+  currency,
   open,
   onOpenChange,
 }: {
@@ -51,6 +52,7 @@ export function ListingFormDialog({
   initialAccount?: EligibleAccountDto | null;
   initialAccounts: EligibleAccountDto[];
   marketplaces: string[];
+  currency: Currency;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -61,7 +63,7 @@ export function ListingFormDialog({
   const [accountsLoading, setAccountsLoading] = useState(false);
   const [duplicateConfirmed, setDuplicateConfirmed] = useState(false);
   const form = useForm<ListingInput>({
-    resolver: zodResolver(listingInputSchema),
+    resolver: zodResolver(listingInputSchema(currency)),
     defaultValues: {
       accountId: "",
       marketplace: "",
@@ -79,7 +81,7 @@ export function ListingFormDialog({
         ? {
             accountId: listing.account.id,
             marketplace: listing.marketplace,
-            listingPrice: listing.listingPrice,
+            listingPrice: moneyToDecimal(BigInt(listing.listingPrice), currency),
             listingUrl: listing.listingUrl ?? "",
             listedAt: listing.listedDateInput,
             notes: listing.notes ?? "",
@@ -93,7 +95,7 @@ export function ListingFormDialog({
             notes: "",
           },
     );
-  }, [form, initialAccount, listing, open]);
+  }, [currency, form, initialAccount, listing, open]);
 
   useEffect(() => {
     if (!open || listing) return;
@@ -130,10 +132,11 @@ export function ListingFormDialog({
   const selectedAccount =
     accounts.find((account) => account.id === accountId) ??
     (fallbackAccount?.id === accountId ? fallbackAccount : null);
+  const askingPrice = parseMoneyInput(listingPrice, currency);
   const metrics =
-    selectedAccount && /^\d+$/.test(listingPrice)
+    selectedAccount && askingPrice !== null
       ? calculateListingMetrics({
-          listingPrice: BigInt(listingPrice),
+          listingPrice: askingPrice,
           purchasePrice: BigInt(selectedAccount.purchasePrice),
         })
       : null;
@@ -243,7 +246,8 @@ export function ListingFormDialog({
                             <span className="min-w-0 flex-1">
                               <span className="block truncate">{account.accountName}</span>
                               <span className="block truncate text-xs text-muted-foreground">
-                                {account.gameName} · <Money value={BigInt(account.purchasePrice)} />
+                                {account.gameName} ·{" "}
+                                <Money currency={currency} value={BigInt(account.purchasePrice)} />
                               </span>
                             </span>
                             {account.id === accountId ? <Check className="size-4" /> : null}
@@ -270,7 +274,8 @@ export function ListingFormDialog({
                   <p className="truncate text-sm font-medium">{selectedAccount.accountName}</p>
                   <p className="text-xs text-muted-foreground">{selectedAccount.gameName}</p>
                   <p className="mt-1 text-xs">
-                    Purchase price: <Money value={BigInt(selectedAccount.purchasePrice)} />
+                    Purchase price:{" "}
+                    <Money currency={currency} value={BigInt(selectedAccount.purchasePrice)} />
                   </p>
                 </div>
               </div>
@@ -281,7 +286,7 @@ export function ListingFormDialog({
                     {selectedAccount.activeListings.map((item) => (
                       <span key={item.id} className="rounded bg-secondary px-2 py-1 text-[10px]">
                         {item.marketplace} ({item.listingCode}):{" "}
-                        <Money value={BigInt(item.listingPrice)} />
+                        <Money currency={currency} value={BigInt(item.listingPrice)} />
                       </span>
                     ))}
                   </div>
@@ -309,9 +314,10 @@ export function ListingFormDialog({
               name="listingPrice"
               render={({ field }) => (
                 <MoneyInput
+                  currency={currency}
                   value={field.value}
                   onChange={field.onChange}
-                  placeholder="850.000"
+                  placeholder={currency === "IDR" ? "850.000" : "85.00"}
                   disabled={pending}
                 />
               )}
@@ -357,7 +363,7 @@ export function ListingFormDialog({
             <div className="grid grid-cols-3 gap-2 rounded-lg border p-3 text-center sm:col-span-2">
               <Metric
                 label="Estimated profit"
-                value={<Money value={metrics.estimatedProfit} colored />}
+                value={<Money currency={currency} value={metrics.estimatedProfit} colored />}
               />
               <Metric
                 label="Profit margin"

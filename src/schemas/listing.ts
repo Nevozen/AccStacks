@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { moneyInputSchema } from "./account";
+import type { Currency } from "@/lib/money";
+import { moneyInputSchema } from "./money";
 
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 const externalUrl = z
@@ -14,19 +15,20 @@ const externalUrl = z
     }
   }, "Enter a valid HTTPS listing URL");
 
-export const listingInputSchema = z.object({
+const listingFields = z.object({
   accountId: z.string().trim().min(1, "Select an account").max(100),
   marketplace: z.string().trim().min(1, "Marketplace is required").max(100),
-  listingPrice: moneyInputSchema,
   listingUrl: z.union([z.literal(""), externalUrl]).optional(),
   listedAt: z.iso.date("Enter a valid listing date"),
   notes: optionalText(2000),
 });
 
-export const updateListingInputSchema = listingInputSchema.omit({ accountId: true });
+export function listingInputSchema(currency: Currency) {
+  return listingFields.extend({ listingPrice: moneyInputSchema(currency) });
+}
 
-export type ListingInput = z.infer<typeof listingInputSchema>;
-export type UpdateListingInput = z.infer<typeof updateListingInputSchema>;
+export type ListingInput = z.infer<ReturnType<typeof listingInputSchema>>;
+export type UpdateListingInput = Omit<ListingInput, "accountId">;
 
 export const listingQuerySchema = z.object({
   q: z.string().trim().max(150).default(""),

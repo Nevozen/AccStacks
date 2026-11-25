@@ -12,12 +12,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/dates";
+import type { Currency } from "@/lib/money";
 import { AccountActions } from "./account-actions";
 import type { StockAccountDto } from "./types";
 
 export function AccountTable({
   accounts,
   timezone,
+  currency,
   showSales,
   onView,
   onEdit,
@@ -25,6 +27,7 @@ export function AccountTable({
 }: {
   accounts: StockAccountDto[];
   timezone: string;
+  currency: Currency;
   showSales: boolean;
   onView: (account: StockAccountDto) => void;
   onEdit: (account: StockAccountDto) => void;
@@ -83,19 +86,20 @@ export function AccountTable({
                 </TableCell>
                 <TableCell className="text-right whitespace-nowrap">
                   <Money
+                    currency={currency}
                     value={BigInt(showSales && sale ? sale.purchasePrice : account.purchasePrice)}
                   />
                 </TableCell>
                 {showSales ? (
                   <>
                     <TableCell className="text-right whitespace-nowrap">
-                      {sale && <Money value={BigInt(sale.sellingPrice)} />}
+                      {sale && <Money currency={currency} value={BigInt(sale.sellingPrice)} />}
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
-                      {sale && <Money value={BigInt(sale.totalExpenses)} />}
+                      {sale && <Money currency={currency} value={BigInt(sale.totalExpenses)} />}
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
-                      {sale && <Money value={BigInt(sale.netProfit)} colored />}
+                      {sale && <Money currency={currency} value={BigInt(sale.netProfit)} colored />}
                     </TableCell>
                   </>
                 ) : (

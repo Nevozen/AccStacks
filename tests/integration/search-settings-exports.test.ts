@@ -37,7 +37,6 @@ describe("settings, search, and exports", () => {
     const updated = await updateSettings(user.id, {
       theme: "DARK",
       timezone: "UTC",
-      currency: "IDR",
       preferredStockView: "TABLE",
     });
     expect(updated).toMatchObject({ theme: "DARK", timezone: "UTC", preferredStockView: "TABLE" });
@@ -45,7 +44,6 @@ describe("settings, search, and exports", () => {
       updateSettings(user.id, {
         theme: "LIGHT",
         timezone: "Invalid/Zone",
-        currency: "IDR",
         preferredStockView: "GRID",
       }),
     ).rejects.toThrow();

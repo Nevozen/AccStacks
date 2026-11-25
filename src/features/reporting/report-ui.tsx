@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import type { loadReport } from "@/server/reporting";
 import { reportHref, type ReportPeriod } from "./report-period";
 
-export type ReportProps = Awaited<ReturnType<typeof loadReport>>;
+export type ReportProps = NonNullable<Awaited<ReturnType<typeof loadReport>>>;
 
 export function ReportPanel({
   id,

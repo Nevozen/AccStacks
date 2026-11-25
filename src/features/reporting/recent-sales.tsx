@@ -9,14 +9,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/dates";
+import type { Currency } from "@/lib/money";
 import { ReportLink, ReportPanel, type ReportProps } from "./report-ui";
 
 export function RecentSales({
   sales,
   timezone,
+  currency,
 }: {
   sales: ReportProps["data"]["recentSales"];
   timezone: string;
+  currency: Currency;
 }) {
   return (
     <ReportPanel
@@ -72,11 +75,20 @@ export function RecentSales({
                   </p>
                 </TableCell>
                 <TableCell className="hidden text-right whitespace-nowrap sm:table-cell">
-                  <Money value={sale.sellingPrice} />
+                  <Money currency={currency} value={sale.sellingPrice} />
                 </TableCell>
                 <TableCell className="pr-panel pl-2 text-right wrap-anywhere md:pr-3">
-                  <Money value={sale.sellingPrice} className="block sm:hidden" />
-                  <Money value={sale.netProfit} colored className="text-xs sm:text-sm" />
+                  <Money
+                    currency={currency}
+                    value={sale.sellingPrice}
+                    className="block sm:hidden"
+                  />
+                  <Money
+                    currency={currency}
+                    value={sale.netProfit}
+                    colored
+                    className="text-xs sm:text-sm"
+                  />
                 </TableCell>
                 <TableCell className="hidden pr-panel whitespace-nowrap md:table-cell">
                   {formatDate(sale.soldAt, timezone)}

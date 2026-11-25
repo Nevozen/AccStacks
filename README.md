@@ -9,7 +9,7 @@ A centralized management system for game account resellers.
 Manage inventory, organize marketplace listings, record sales, and track business performance — all in one workspace.
 
 ![Project Status](https://img.shields.io/badge/status-in%20development-orange?style=flat-square)
-![Currency](https://img.shields.io/badge/currency-IDR-blue?style=flat-square)
+![Currency](https://img.shields.io/badge/currency-IDR%20%7C%20USD-blue?style=flat-square)
 ![Made by](https://img.shields.io/badge/made%20by-Wardana%20Dev-black?style=flat-square)
 
 </div>
@@ -133,7 +133,7 @@ Profit margin and ROI are undefined when their respective denominators are zero.
 | **Profit margin** | **34.38%** |
 | **ROI** | **55.00%** |
 
-All monetary values use Indonesian Rupiah (IDR) by default.
+Choose IDR or USD the first time you enter a new workspace. That choice applies to capital, purchases, listings, sales, analytics, and exports. Existing workspaces keep IDR; there is no currency conversion.
 
 ## Tech Stack
 

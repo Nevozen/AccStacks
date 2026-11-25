@@ -9,17 +9,19 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { formatDate, formatDateTime } from "@/lib/dates";
-import { formatPercentage } from "@/lib/money";
+import { formatPercentage, type Currency } from "@/lib/money";
 import type { AccountDetailDto } from "./types";
 
 export function AccountDetailSheet({
   account,
   timezone,
+  currency,
   onClose,
   onEdit,
 }: {
   account: AccountDetailDto | null;
   timezone: string;
+  currency: Currency;
   onClose: () => void;
   onEdit: (account: AccountDetailDto) => void;
 }) {
@@ -51,7 +53,7 @@ export function AccountDetailSheet({
             ) : null}
             <Section title="Account information">
               <Row label="Purchase price">
-                <Money value={BigInt(account.purchasePrice)} />
+                <Money currency={currency} value={BigInt(account.purchasePrice)} />
               </Row>
               <Row
                 label="Purchase date"
@@ -74,19 +76,19 @@ export function AccountDetailSheet({
                   value={formatDateTime(new Date(account.sale.soldAt), timezone)}
                 />
                 <Row label="Original listing price">
-                  <Money value={BigInt(account.sale.originalListingPrice)} />
+                  <Money currency={currency} value={BigInt(account.sale.originalListingPrice)} />
                 </Row>
                 <Row label="Actual selling price">
-                  <Money value={BigInt(account.sale.sellingPrice)} />
+                  <Money currency={currency} value={BigInt(account.sale.sellingPrice)} />
                 </Row>
                 <Row label="Purchase price snapshot">
-                  <Money value={BigInt(account.sale.purchasePrice)} />
+                  <Money currency={currency} value={BigInt(account.sale.purchasePrice)} />
                 </Row>
                 <Row label="Total expenses">
-                  <Money value={BigInt(account.sale.totalExpenses)} />
+                  <Money currency={currency} value={BigInt(account.sale.totalExpenses)} />
                 </Row>
                 <Row label="Net profit">
-                  <Money value={BigInt(account.sale.netProfit)} colored />
+                  <Money currency={currency} value={BigInt(account.sale.netProfit)} colored />
                 </Row>
                 <Row label="Profit margin" value={formatPercentage(account.sale.profitMargin)} />
                 <Row label="Return on investment" value={formatPercentage(account.sale.roi)} />
@@ -96,7 +98,7 @@ export function AccountDetailSheet({
                     {account.sale.expenses.map((expense) => (
                       <div key={expense.id} className="flex justify-between gap-3 py-1 text-xs">
                         <span className="text-muted-foreground">{expense.name}</span>
-                        <Money value={BigInt(expense.amount)} />
+                        <Money currency={currency} value={BigInt(expense.amount)} />
                       </div>
                     ))}
                   </div>
@@ -136,7 +138,7 @@ export function AccountDetailSheet({
                       </Badge>
                     </div>
                     <div className="mt-2 flex items-center justify-between">
-                      <Money value={BigInt(listing.listingPrice)} />
+                      <Money currency={currency} value={BigInt(listing.listingPrice)} />
                       <span className="text-muted-foreground">
                         {formatDate(new Date(listing.listedAt), timezone)}
                       </span>

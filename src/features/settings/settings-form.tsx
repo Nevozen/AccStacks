@@ -7,9 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { CurrencyIdentity } from "@/components/shared/currency-identity";
 import { MoneyInput } from "@/components/shared/money-input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import type { Currency } from "@/lib/money";
 import {
   Select,
   SelectContent,
@@ -31,11 +33,17 @@ const timezones = [
   "America/Los_Angeles",
 ];
 
-export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }) {
+export function SettingsForm({
+  defaultValues,
+  currency,
+}: {
+  defaultValues: SettingsInput;
+  currency: Currency;
+}) {
   const router = useRouter();
   const { setTheme } = useTheme();
   const form = useForm<SettingsInput>({
-    resolver: zodResolver(settingsInputSchema),
+    resolver: zodResolver(settingsInputSchema(currency)),
     defaultValues,
   });
   const theme = useWatch({ control: form.control, name: "theme" });
@@ -125,8 +133,8 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
           </div>
           <dl>
             <dt className="text-sm font-medium">Currency</dt>
-            <dd className="mt-1.5 rounded-md bg-muted px-3 py-2 text-sm">
-              IDR / Indonesian Rupiah
+            <dd className="mt-1.5 rounded-md border p-2">
+              <CurrencyIdentity currency={currency} />
             </dd>
           </dl>
         </CardContent>
@@ -140,7 +148,7 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
           </p>
         </CardHeader>
         <CardContent className="space-y-1.5">
-          <Label htmlFor="owner-capital">Owner capital (IDR)</Label>
+          <Label htmlFor="owner-capital">Owner capital ({currency})</Label>
           <div className="max-w-64">
             <Controller
               control={form.control}
@@ -148,6 +156,7 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
               render={({ field }) => (
                 <MoneyInput
                   id="owner-capital"
+                  currency={currency}
                   ref={field.ref}
                   value={field.value ?? "0"}
                   onChange={field.onChange}

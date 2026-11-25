@@ -14,11 +14,11 @@ AccStacks by Wardana Dev is a private game-account reseller management applicati
 
 ## UI and localization
 
-Use a compact, professional SaaS interface with restrained accents, accessible contrast/focus/keyboard behavior, responsive layouts, loading/empty/error states, and functional controls only. Default to Light theme while supporting Dark and System preferences. The interface is English. Default to IDR and `Asia/Jakarta`; store timestamps in UTC and format them in the user's configured timezone. Format money without fractional Rupiah.
+Use a compact, professional SaaS interface with restrained accents, accessible contrast/focus/keyboard behavior, responsive layouts, loading/empty/error states, and functional controls only. Default to Light theme while supporting Dark and System preferences. The interface is English. New workspaces select IDR or USD at first login; existing workspaces keep IDR. Default to `Asia/Jakarta`; store timestamps in UTC and format them in the user's configured timezone.
 
 ## Financial and lifecycle rules
 
-- Store money as integer Rupiah (`BigInt` at persistence/domain boundaries); never use floating-point money.
+- Store money as integer minor units (whole Rupiah or US cents) using `BigInt` at persistence/domain boundaries; never use floating-point money. The workspace currency is fixed after setup, with no conversion or relabeling.
 - Estimated profit = listing price − purchase price. Net profit = selling price − purchase price − total expenses.
 - Margin uses selling/listing price as denominator; ROI uses purchase price. Zero denominators display `N/A`; negative profit is valid.
 - The server recomputes all financial results. Never trust client totals or count active listings as revenue.

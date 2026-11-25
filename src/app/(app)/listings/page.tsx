@@ -5,8 +5,7 @@ import { DEFAULT_MARKETPLACES } from "@/lib/normalization";
 import { listingQuerySchema } from "@/schemas/listing";
 import { getAccountGames } from "@/services/accounts";
 import { getEligibleAccounts, getListingsData, getMarketplaces } from "@/services/listings";
-import { db } from "@/server/db";
-import { requireUser } from "@/server/session";
+import { getWorkspace } from "@/server/workspace";
 
 export const metadata: Metadata = { title: "Listings" };
 
@@ -21,13 +20,9 @@ export default async function ListingsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const user = await requireUser();
+  const { user, settings } = await getWorkspace();
+  if (!settings.currency) return null;
   const params = await searchParams;
-  const settings = await db.userSettings.upsert({
-    where: { userId: user.id },
-    update: {},
-    create: { userId: user.id },
-  });
   const query = listingQuerySchema.parse({
     q: first(params.q),
     game: first(params.game),
@@ -68,6 +63,7 @@ export default async function ListingsPage({
       initialAccount={initialAccountRecord ? toEligibleAccountDto(initialAccountRecord) : null}
       initialCreateOpen={first(params.create) === "1"}
       timezone={settings.timezone}
+      currency={settings.currency}
     />
   );
 }

@@ -15,7 +15,7 @@ export async function registerUser(input: unknown, clientIdentifier: string) {
 
   try {
     return await db.user.create({
-      data: { name, email, passwordHash, settings: { create: {} } },
+      data: { name, email, passwordHash, settings: { create: { currency: null } } },
       select: { id: true, email: true },
     });
   } catch (error) {

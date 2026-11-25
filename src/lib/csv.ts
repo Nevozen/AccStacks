@@ -1,9 +1,17 @@
-export type CsvCell = string | number | bigint | Date | null | undefined;
+import { moneyToDecimal, type Currency } from "./money";
+
+type CsvMoney = { amount: bigint; currency: Currency };
+export type CsvCell = string | number | bigint | Date | CsvMoney | null | undefined;
+
+export function csvMoney(amount: bigint, currency: Currency): CsvMoney {
+  return { amount, currency };
+}
 
 export function escapeCsvCell(value: CsvCell) {
   if (value === null || value === undefined) return "";
   if (typeof value === "number" || typeof value === "bigint") return String(value);
   if (value instanceof Date) return value.toISOString();
+  if (typeof value === "object") return moneyToDecimal(value.amount, value.currency);
 
   let text = value.replace(/\0/g, "");
   if (/^[\s\u0000-\u001f]*[=+\-@]/u.test(text)) text = `'${text}`;

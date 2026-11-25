@@ -3,8 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { actionError, type ActionResult } from "@/lib/action-result";
 import type { SettingsInput } from "@/schemas/settings";
-import { updateCapital, updateSettings } from "@/services/settings";
+import { chooseCurrency, updateCapital, updateSettings } from "@/services/settings";
 import { requireActionUser } from "@/server/session";
+
+export async function chooseCurrencyAction(currency: string): Promise<ActionResult> {
+  try {
+    const user = await requireActionUser();
+    await chooseCurrency(user.id, currency);
+    return { success: true, message: "Workspace currency saved" };
+  } catch (error) {
+    return actionError(error, "Unable to set currency");
+  }
+}
 
 export async function updateCapitalAction(capital: string): Promise<ActionResult> {
   try {

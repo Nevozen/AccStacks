@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { MAX_MONEY } from "@/lib/money";
 import { isValidStoredImageId } from "@/lib/image-files";
+import type { Currency } from "@/lib/money";
+import { moneyInputSchema } from "./money";
 
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 const httpsUrl = z
@@ -15,14 +16,7 @@ const httpsUrl = z
     }
   }, "Enter a valid HTTPS URL");
 
-export const moneyInputSchema = z
-  .string()
-  .trim()
-  .regex(/^\d+$/, "Enter a whole Rupiah amount")
-  .max(16, "Amount is too large")
-  .refine((value) => BigInt(value) <= MAX_MONEY, "Amount exceeds the supported range");
-
-export const accountInputSchema = z.object({
+const accountFields = z.object({
   gameName: z.string().trim().min(1, "Game name is required").max(100),
   accountName: z.string().trim().min(1, "Account name is required").max(150),
   description: optionalText(2000),
@@ -40,13 +34,16 @@ export const accountInputSchema = z.object({
         ),
     ])
     .optional(),
-  purchasePrice: moneyInputSchema,
   purchaseDate: z.iso.date("Enter a valid purchase date"),
   purchasedFrom: optionalText(200),
   notes: optionalText(2000),
 });
 
-export type AccountInput = z.infer<typeof accountInputSchema>;
+export function accountInputSchema(currency: Currency) {
+  return accountFields.extend({ purchasePrice: moneyInputSchema(currency) });
+}
+
+export type AccountInput = z.infer<ReturnType<typeof accountInputSchema>>;
 
 export const stockQuerySchema = z.object({
   q: z.string().trim().max(150).default(""),

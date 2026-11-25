@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, toCsv } from "@/lib/csv";
+import { csvMoney, escapeCsvCell, toCsv } from "@/lib/csv";
 
 describe("CSV export safety", () => {
   it.each(["=1+1", "+SUM(A1:A2)", "-2+3", "@cmd", "  =HYPERLINK(...)", "\t=1+1"])(
@@ -17,6 +17,8 @@ describe("CSV export safety", () => {
 
   it("preserves numeric financial values including negative profit", () => {
     expect(escapeCsvCell(-125_000n)).toBe("-125000");
+    expect(escapeCsvCell(csvMoney(-125n, "USD"))).toBe("-1.25");
+    expect(escapeCsvCell("-1.25")).toBe("'-1.25");
     expect(escapeCsvCell(0)).toBe("0");
     expect(escapeCsvCell(null)).toBe("");
   });

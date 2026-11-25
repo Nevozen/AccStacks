@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Currency } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { ListingCard } from "./listing-card";
 import type { ListingDto, ListingGroupDto } from "./types";
@@ -13,6 +14,7 @@ type StackStyle = React.CSSProperties &
 export function ListingGroupExpansion({
   group,
   timezone,
+  currency,
   onClose,
   onEdit,
   onDelete,
@@ -20,6 +22,7 @@ export function ListingGroupExpansion({
 }: {
   group: ListingGroupDto;
   timezone: string;
+  currency: Currency;
   onClose: () => void;
   onEdit: (listing: ListingDto) => void;
   onDelete: (listing: ListingDto) => void;
@@ -81,6 +84,7 @@ export function ListingGroupExpansion({
             <ListingCard
               listing={listing}
               timezone={timezone}
+              currency={currency}
               onEdit={() => onEdit(listing)}
               onDelete={() => onDelete(listing)}
               onMarkSold={() => onMarkSold(listing)}

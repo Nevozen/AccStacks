@@ -5,6 +5,7 @@ import { Money } from "@/components/shared/money";
 import { AccountStatusBadge } from "@/components/shared/status-badge";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/dates";
+import type { Currency } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { AccountActions } from "./account-actions";
 import type { StockAccountDto } from "./types";
@@ -12,12 +13,14 @@ import type { StockAccountDto } from "./types";
 export function AccountCard({
   account,
   timezone,
+  currency,
   onView,
   onEdit,
   onDelete,
 }: {
   account: StockAccountDto;
   timezone: string;
+  currency: Currency;
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -43,6 +46,7 @@ export function AccountCard({
           <dt className="text-muted-foreground">Purchase price</dt>
           <dd className="mt-0.5 wrap-anywhere">
             <Money
+              currency={currency}
               value={BigInt(sale?.purchasePrice ?? account.purchasePrice)}
               className="font-semibold"
             />
@@ -52,7 +56,12 @@ export function AccountCard({
           <dt className="text-muted-foreground">{sale ? "Net profit" : "Active listings"}</dt>
           <dd className="mt-0.5 font-semibold tabular-nums wrap-anywhere">
             {sale ? (
-              <Money value={BigInt(sale.netProfit)} colored className="font-semibold" />
+              <Money
+                currency={currency}
+                value={BigInt(sale.netProfit)}
+                colored
+                className="font-semibold"
+              />
             ) : (
               account.activeListingCount
             )}

@@ -3,7 +3,7 @@ import { ArrowUpRight, Boxes, Wallet } from "lucide-react";
 import { Money } from "@/components/shared/money";
 import { Card } from "@/components/ui/card";
 import { calculatePercentage } from "@/lib/finance";
-import { formatPercentage } from "@/lib/money";
+import { formatPercentage, type Currency } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { MetricHelp, PeriodChange, ReportLink, ReportPanel, type ReportProps } from "./report-ui";
 
@@ -15,7 +15,8 @@ export function FinancialPosition({
   estimatedCash,
   retainedNetProfit,
   inventoryValue,
-}: Data["capitalPosition"] & { inventoryValue: bigint }) {
+  currency,
+}: Data["capitalPosition"] & { inventoryValue: bigint; currency: Currency }) {
   const allocation =
     estimatedCash > 0n && inventoryValue > 0n
       ? calculatePercentage(estimatedCash, estimatedCash + inventoryValue)
@@ -59,6 +60,7 @@ export function FinancialPosition({
         </dt>
         <dd className="mt-0.5 text-display font-semibold tracking-[-0.05em] wrap-anywhere">
           <Money
+            currency={currency}
             value={estimatedEquity}
             className={cn("font-semibold", estimatedEquity < 0n && "text-equity-negative")}
           />
@@ -85,6 +87,7 @@ export function FinancialPosition({
             </dt>
             <dd className="mt-0.5 text-sm wrap-anywhere">
               <Money
+                currency={currency}
                 value={value}
                 className={cn("font-semibold", value < 0n && "text-equity-negative")}
               />
@@ -96,7 +99,11 @@ export function FinancialPosition({
   );
 }
 
-export function ProfitOverview({ financial, comparison }: Pick<Data, "financial" | "comparison">) {
+export function ProfitOverview({
+  financial,
+  comparison,
+  currency,
+}: Pick<Data, "financial" | "comparison"> & { currency: Currency }) {
   return (
     <ReportPanel
       id="profit-overview"
@@ -108,7 +115,12 @@ export function ProfitOverview({ financial, comparison }: Pick<Data, "financial"
         <dl>
           <dt className="text-sm text-muted-foreground">Net Profit</dt>
           <dd className="mt-0.5 text-display font-semibold tracking-[-0.05em] wrap-anywhere">
-            <Money value={financial.netProfit} colored className="font-semibold" />
+            <Money
+              currency={currency}
+              value={financial.netProfit}
+              colored
+              className="font-semibold"
+            />
           </dd>
         </dl>
         <PeriodChange comparison={comparison} metric="netProfit" className="mt-2" />
@@ -117,7 +129,11 @@ export function ProfitOverview({ financial, comparison }: Pick<Data, "financial"
             <div>
               <dt className="text-xs text-muted-foreground">Total Revenue</dt>
               <dd className="mt-0.5 text-lg leading-tight tracking-tight wrap-anywhere">
-                <Money value={financial.totalRevenue} className="font-semibold" />
+                <Money
+                  currency={currency}
+                  value={financial.totalRevenue}
+                  className="font-semibold"
+                />
               </dd>
             </div>
             <div>

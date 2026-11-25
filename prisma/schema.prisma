@@ -43,7 +43,7 @@ model UserSettings {
   userId             String    @unique
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme              Theme     @default(LIGHT)
-  currency           String    @default("IDR") @db.Char(3)
+  currency           String?   @default("IDR") @db.Char(3)
   timezone           String    @default("Asia/Jakarta")
   preferredStockView StockView @default(GRID)
   capital            BigInt?

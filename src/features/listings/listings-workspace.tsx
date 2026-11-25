@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import type { Currency } from "@/lib/money";
 import { SaleConfirmationDialog } from "@/features/sales/sale-confirmation-dialog";
 import { cancelListingAction } from "./actions";
 import { groupListings } from "./groups";
@@ -53,6 +54,7 @@ export function ListingsWorkspace({
   initialAccount,
   initialCreateOpen,
   timezone,
+  currency,
 }: {
   listings: ListingDto[];
   totalActiveListings: number;
@@ -68,6 +70,7 @@ export function ListingsWorkspace({
   initialAccount: EligibleAccountDto | null;
   initialCreateOpen: boolean;
   timezone: string;
+  currency: Currency;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -251,6 +254,7 @@ export function ListingsWorkspace({
                   key={group.account.id}
                   group={group}
                   timezone={timezone}
+                  currency={currency}
                   onClose={() => setExpandedAccountId(null)}
                   onEdit={(listing) => {
                     setExpandedAccountId(null);
@@ -271,6 +275,7 @@ export function ListingsWorkspace({
                   key={group.account.id}
                   listing={group.listings[0]!}
                   timezone={timezone}
+                  currency={currency}
                   onEdit={() => {
                     setEditing(group.listings[0]!);
                     setFormOpen(true);
@@ -282,6 +287,7 @@ export function ListingsWorkspace({
                 <ListingGroupCard
                   key={group.account.id}
                   group={group}
+                  currency={currency}
                   onShowAll={() => setExpandedAccountId(group.account.id)}
                 />
               ),
@@ -303,10 +309,15 @@ export function ListingsWorkspace({
         initialAccount={initialAccount}
         initialAccounts={eligibleAccounts}
         marketplaces={marketplaceSuggestions}
+        currency={currency}
         open={formOpen}
         onOpenChange={handleFormOpen}
       />
-      <SaleConfirmationDialog listing={selling} onClose={() => setSelling(null)} />
+      <SaleConfirmationDialog
+        listing={selling}
+        currency={currency}
+        onClose={() => setSelling(null)}
+      />
       <AlertDialog
         open={Boolean(deleting)}
         onOpenChange={(open) => !open && !deletePending && setDeleting(null)}

@@ -14,9 +14,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { parseMoneyInput, type Currency } from "@/lib/money";
 import { updateCapitalAction } from "./actions";
 
-export function CapitalSetupDialog({ open }: { open: boolean }) {
+export function CapitalSetupDialog({ open, currency }: { open: boolean; currency: Currency }) {
   const router = useRouter();
   const [capital, setCapital] = useState("");
   const [pending, setPending] = useState(false);
@@ -25,8 +26,8 @@ export function CapitalSetupDialog({ open }: { open: boolean }) {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (pending) return;
-    if (!/^\d+$/.test(capital)) {
-      setError("Enter your starting capital in whole Rupiah");
+    if (parseMoneyInput(capital, currency) === null) {
+      setError(`Enter a valid starting capital amount in ${currency}`);
       return;
     }
     setPending(true);
@@ -58,13 +59,14 @@ export function CapitalSetupDialog({ open }: { open: boolean }) {
         </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
           <div className="space-y-1.5">
-            <Label htmlFor="starting-capital">Starting capital (IDR)</Label>
+            <Label htmlFor="starting-capital">Starting capital ({currency})</Label>
             <MoneyInput
               id="starting-capital"
+              currency={currency}
               value={capital}
               onChange={setCapital}
               disabled={pending}
-              placeholder="1.000.000"
+              placeholder={currency === "IDR" ? "1.000.000" : "100.00"}
               autoFocus
               aria-invalid={Boolean(error)}
               aria-describedby={error ? "starting-capital-error" : undefined}

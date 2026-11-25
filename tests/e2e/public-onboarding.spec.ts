@@ -57,6 +57,14 @@ test("registers, signs in, and opens an isolated workspace with starting capital
   await page.getByLabel("Confirm password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL("/overview");
+  const currency = page.getByRole("dialog", { name: "Choose your workspace currency" });
+  await expect(currency.getByRole("radio", { name: /Indonesian rupiah/ })).toBeVisible();
+  await expect(currency.getByRole("radio", { name: /US dollar/ })).toBeVisible();
+  await expect(currency.getByRole("button", { name: "Continue" })).toBeDisabled();
+  expect((await page.request.get("/api/export/accounts")).status()).toBe(409);
+  await currency.getByRole("radio", { name: /Indonesian rupiah/ }).check();
+  await currency.getByRole("button", { name: "Continue" }).click();
+  await expect(currency).toBeHidden();
   const capital = page.getByRole("dialog", { name: "Set your starting capital" });
   await capital.getByLabel("Starting capital (IDR)").fill("0");
   await capital.getByRole("button", { name: "Save starting capital" }).click();

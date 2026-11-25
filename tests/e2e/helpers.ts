@@ -1,9 +1,13 @@
 import { randomUUID } from "node:crypto";
 import argon2 from "argon2";
 import { expect, type Page } from "@playwright/test";
+import type { Currency } from "@/lib/money";
 import { testDb } from "../integration/client";
 
-export async function createE2eOwner(options?: { capital?: bigint | null }) {
+export async function createE2eOwner(options?: {
+  capital?: bigint | null;
+  currency?: Currency | null;
+}) {
   const suffix = randomUUID();
   const email = `e2e-${suffix}@example.invalid`;
   const password = `e2e-password-${suffix}`;
@@ -18,7 +22,10 @@ export async function createE2eOwner(options?: { capital?: bigint | null }) {
         parallelism: 1,
       }),
       settings: {
-        create: { capital: options?.capital === undefined ? 1_000_000n : options.capital },
+        create: {
+          capital: options?.capital === undefined ? 1_000_000n : options.capital,
+          currency: options?.currency === undefined ? "IDR" : options.currency,
+        },
       },
     },
   });

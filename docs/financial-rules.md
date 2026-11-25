@@ -2,7 +2,7 @@
 
 ## Monetary representation
 
-All monetary values are whole Indonesian Rupiah stored as PostgreSQL `BIGINT` and handled as JavaScript `BigInt` at persistence/domain boundaries. Floating-point money is not used. Client previews are advisory; the server recalculates and stores authoritative sale values.
+Each workspace selects Indonesian rupiah (IDR) or US dollars (USD) once before recording capital. Existing workspaces retain IDR without changes to their balances. All monetary amounts are stored as PostgreSQL `BIGINT` in minor units (whole Rupiah or US cents) and handled as JavaScript `BigInt` at persistence/domain boundaries. There is no exchange-rate conversion and the currency cannot be changed after setup. CSV amounts use major units without currency symbols or grouping separators; USD amounts include two decimal places. Client previews are advisory; the server recalculates and stores authoritative sale values.
 
 ## Formulas
 
@@ -17,7 +17,7 @@ Aggregate Margin = Total Net Profit / Revenue × 100
 Aggregate ROI = Total Net Profit / COGS × 100
 ```
 
-Zero denominators produce `N/A`. Percentages use integer-ratio calculations and round to at most two decimal places for display. Loss-making sales are valid and remain in history. Average Rupiah values round to the nearest whole Rupiah.
+Zero denominators produce `N/A`. Percentages use integer-ratio calculations and round to at most two decimal places for display. Loss-making sales are valid and remain in history. Average amounts round to the nearest minor unit.
 
 ## Inventory and sales
 

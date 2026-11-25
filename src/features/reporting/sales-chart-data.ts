@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import type { ReportProps } from "./report-ui";
 
 export type SalesChartPoint = {
@@ -15,7 +15,11 @@ export type SalesChartPoint = {
 
 type TrendData = Pick<ReportProps["data"], "trends" | "range" | "granularity">;
 
-export function toSalesChartData(data: TrendData, timezone: string): SalesChartPoint[] {
+export function toSalesChartData(
+  data: TrendData,
+  timezone: string,
+  currency: Currency,
+): SalesChartPoint[] {
   if (!data.trends.length) return [];
   const daily = data.granularity === "day";
   const unit = data.granularity;
@@ -44,11 +48,11 @@ export function toSalesChartData(data: TrendData, timezone: string): SalesChartP
       label: date.toFormat(daily ? "dd MMM" : "MMM yy"),
       date: date.toFormat(daily ? "dd MMM yyyy" : "MMM yyyy"),
       sales: Number(row?.sales ?? 0n),
-      // Recharts uses numbers for positions; tooltips keep the exact integer Rupiah values.
+      // Recharts uses numbers for positions; tooltips use the exact BigInt values.
       revenue: Number(revenue),
       netProfit: Number(netProfit),
-      revenueText: formatMoney(revenue),
-      netProfitText: formatMoney(netProfit),
+      revenueText: formatMoney(revenue, currency),
+      netProfitText: formatMoney(netProfit, currency),
     };
   }
 

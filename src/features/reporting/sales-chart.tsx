@@ -10,16 +10,22 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatCompactMoney } from "@/lib/money";
+import { formatCompactMoney, type Currency } from "@/lib/money";
 import type { SalesChartPoint } from "./sales-chart-data";
 
-export function SalesChart({ points }: { points: SalesChartPoint[] }) {
+export function SalesChart({
+  points,
+  currency,
+}: {
+  points: SalesChartPoint[];
+  currency: Currency;
+}) {
   const ticks = { fill: "var(--muted-foreground)", fontSize: 11 };
   return (
     <div className="h-56 min-w-0 overflow-clip sm:h-[236px] [&_.recharts-surface]:focus-visible:-outline-offset-2">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          title="Revenue and net profit over time in Indonesian Rupiah"
+          title={`Revenue and net profit over time (${currency})`}
           accessibilityLayer
           data={points}
           margin={{ top: 12, right: 10, bottom: 0, left: 0 }}
@@ -41,9 +47,7 @@ export function SalesChart({ points }: { points: SalesChartPoint[] }) {
             tickLine={false}
             axisLine={false}
             tickMargin={6}
-            tickFormatter={(value: number) =>
-              value < 0 ? `-${formatCompactMoney(-value)}` : formatCompactMoney(value)
-            }
+            tickFormatter={(value: number) => formatCompactMoney(value, currency)}
             width={72}
             tickCount={5}
             allowDecimals={false}

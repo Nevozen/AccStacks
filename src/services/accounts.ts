@@ -9,8 +9,10 @@ import {
 } from "@/schemas/account";
 import { AppError } from "@/lib/errors";
 import { dateInputToUtc } from "@/lib/dates";
+import { parseMoneyInput } from "@/lib/money";
 import { normalizeCategory, normalizeName } from "@/lib/normalization";
 import { db } from "@/server/db";
+import { requireCurrency } from "./settings";
 
 const stockAccountInclude = {
   sale: {
@@ -49,7 +51,8 @@ function categoryWhere(
 }
 
 export async function createAccount(ownerId: string, input: AccountInput) {
-  const data = accountInputSchema.parse(input);
+  const currency = await requireCurrency(ownerId);
+  const data = accountInputSchema(currency).parse(input);
   const gameName = normalizeName(data.gameName);
   const gameNameNormalized = normalizeCategory(data.gameName);
 
@@ -91,7 +94,7 @@ export async function createAccount(ownerId: string, input: AccountInput) {
               accountName: data.accountName,
               description: emptyToNull(data.description),
               imageUrl: emptyToNull(data.imageUrl),
-              purchasePrice: BigInt(data.purchasePrice),
+              purchasePrice: parseMoneyInput(data.purchasePrice, currency)!,
               purchaseDate: dateInputToUtc(data.purchaseDate),
               purchasedFrom: emptyToNull(data.purchasedFrom),
               notes: emptyToNull(data.notes),
@@ -114,7 +117,8 @@ export async function createAccount(ownerId: string, input: AccountInput) {
 }
 
 export async function updateAccount(ownerId: string, accountId: string, input: AccountInput) {
-  const data = accountInputSchema.parse(input);
+  const currency = await requireCurrency(ownerId);
+  const data = accountInputSchema(currency).parse(input);
   const account = await db.account.findFirst({
     where: { id: accountId, ownerId, deletedAt: null },
     include: { sale: { select: { id: true } } },
@@ -130,7 +134,7 @@ export async function updateAccount(ownerId: string, accountId: string, input: A
       accountName: data.accountName,
       description: emptyToNull(data.description),
       imageUrl: emptyToNull(data.imageUrl),
-      purchasePrice: BigInt(data.purchasePrice),
+      purchasePrice: parseMoneyInput(data.purchasePrice, currency)!,
       purchaseDate: dateInputToUtc(data.purchaseDate),
       purchasedFrom: emptyToNull(data.purchasedFrom),
       notes: emptyToNull(data.notes),

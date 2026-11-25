@@ -2,14 +2,17 @@ import { Prisma } from "@/generated/prisma/client";
 import { dateInputToUtc } from "@/lib/dates";
 import { AppError } from "@/lib/errors";
 import { calculateSaleMetrics } from "@/lib/finance";
+import { parseMoneyInput } from "@/lib/money";
 import { saleInputSchema, type SaleInput } from "@/schemas/sale";
 import { db } from "@/server/db";
+import { requireCurrency } from "./settings";
 
 export async function confirmSale(ownerId: string, input: SaleInput) {
-  const data = saleInputSchema.parse(input);
-  const sellingPrice = BigInt(data.sellingPrice);
+  const currency = await requireCurrency(ownerId);
+  const data = saleInputSchema(currency).parse(input);
+  const sellingPrice = parseMoneyInput(data.sellingPrice, currency)!;
   const soldAt = dateInputToUtc(data.soldAt);
-  const expenseAmounts = data.expenses.map((expense) => BigInt(expense.amount));
+  const expenseAmounts = data.expenses.map((expense) => parseMoneyInput(expense.amount, currency)!);
 
   async function execute() {
     return db.$transaction(

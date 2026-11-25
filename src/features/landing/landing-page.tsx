@@ -48,8 +48,7 @@ const features = [
   },
   {
     title: "Real profit, not asking prices",
-    description:
-      "Keep estimated profits apart from completed sales, with fees accounted for in IDR.",
+    description: "Separate asking prices from completed sales and track fees in IDR or USD.",
     icon: Wallet,
   },
   {

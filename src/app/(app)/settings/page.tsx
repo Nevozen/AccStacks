@@ -2,26 +2,27 @@ import type { Metadata } from "next";
 import { SettingsForm } from "@/features/settings/settings-form";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { getSettings } from "@/services/settings";
-import { requireUser } from "@/server/session";
+import { moneyToDecimal } from "@/lib/money";
+import { getWorkspace } from "@/server/workspace";
 
 export const metadata: Metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  const user = await requireUser();
-  const settings = await getSettings(user.id);
+  const { user, settings } = await getWorkspace();
+  const { currency } = settings;
+  if (!currency) return null;
 
   return (
     <div className="space-y-grid">
       <PageHeader title="Settings" />
       <div className="grid max-w-5xl items-start gap-grid md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <SettingsForm
+          currency={currency}
           defaultValues={{
             theme: settings.theme,
             timezone: settings.timezone,
-            currency: "IDR",
             preferredStockView: settings.preferredStockView,
-            capital: settings.capital?.toString() ?? "0",
+            capital: moneyToDecimal(settings.capital ?? 0n, currency),
           }}
         />
         <Card>

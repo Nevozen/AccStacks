@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import type { Currency } from "@/lib/money";
 import { archiveAccountAction, setStockViewAction } from "./actions";
 import { AccountCard } from "./account-card";
 import { AccountDetailSheet } from "./account-detail-sheet";
@@ -48,6 +49,7 @@ export function StocksWorkspace({
   games,
   detail,
   timezone,
+  currency,
   initialAddOpen,
 }: {
   accounts: StockAccountDto[];
@@ -60,6 +62,7 @@ export function StocksWorkspace({
   games: string[];
   detail: AccountDetailDto | null;
   timezone: string;
+  currency: Currency;
   initialAddOpen: boolean;
 }) {
   const router = useRouter();
@@ -289,6 +292,7 @@ export function StocksWorkspace({
           <AccountTable
             accounts={accounts}
             timezone={timezone}
+            currency={currency}
             showSales={isSold}
             onView={(account) => updateParams({ account: account.id }, false)}
             onEdit={openEdit}
@@ -306,6 +310,7 @@ export function StocksWorkspace({
                 key={account.id}
                 account={account}
                 timezone={timezone}
+                currency={currency}
                 onView={() => updateParams({ account: account.id }, false)}
                 onEdit={() => openEdit(account)}
                 onDelete={() => setDeleting(account)}
@@ -327,12 +332,14 @@ export function StocksWorkspace({
         key={editing?.id ?? "new-account"}
         account={editing}
         games={games}
+        currency={currency}
         open={formOpen}
         onOpenChange={handleFormOpen}
       />
       <AccountDetailSheet
         account={detail}
         timezone={timezone}
+        currency={currency}
         onClose={() => updateParams({ account: null }, false)}
         onEdit={openEdit}
       />

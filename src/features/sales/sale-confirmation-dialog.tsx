@@ -24,22 +24,24 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { todayInput } from "@/lib/dates";
 import { calculateSaleMetrics } from "@/lib/finance";
-import { formatPercentage } from "@/lib/money";
+import { formatPercentage, moneyToDecimal, parseMoneyInput, type Currency } from "@/lib/money";
 import { saleInputSchema, type SaleInput } from "@/schemas/sale";
 import type { ListingDto } from "@/features/listings/types";
 import { confirmSaleAction } from "./actions";
 
 export function SaleConfirmationDialog({
   listing,
+  currency,
   onClose,
 }: {
   listing: ListingDto | null;
+  currency: Currency;
   onClose: () => void;
 }) {
   const router = useRouter();
   const [lossConfirmed, setLossConfirmed] = useState(false);
   const form = useForm<SaleInput>({
-    resolver: zodResolver(saleInputSchema),
+    resolver: zodResolver(saleInputSchema(currency)),
     defaultValues: {
       listingId: "",
       sellingPrice: "",
@@ -54,24 +56,29 @@ export function SaleConfirmationDialog({
     if (!listing) return;
     form.reset({
       listingId: listing.id,
-      sellingPrice: listing.listingPrice,
+      sellingPrice: moneyToDecimal(BigInt(listing.listingPrice), currency),
       soldAt: todayInput(),
       notes: "",
       expenses: [],
     });
-  }, [form, listing]);
+  }, [currency, form, listing]);
 
   const sellingPrice = useWatch({ control: form.control, name: "sellingPrice" });
   const expenses = useWatch({ control: form.control, name: "expenses" });
-  const metrics = listing
-    ? calculateSaleMetrics({
-        sellingPrice: /^\d+$/.test(sellingPrice) ? BigInt(sellingPrice) : 0n,
+  const actualPrice = parseMoneyInput(sellingPrice, currency) ?? 0n;
+  const expenseAmounts = expenses.map(({ amount }) => parseMoneyInput(amount, currency) ?? 0n);
+  let metrics: ReturnType<typeof calculateSaleMetrics> | null = null;
+  if (listing) {
+    try {
+      metrics = calculateSaleMetrics({
+        sellingPrice: actualPrice,
         purchasePrice: BigInt(listing.account.purchasePrice),
-        expenses: expenses.map((expense) =>
-          /^\d+$/.test(expense.amount) ? BigInt(expense.amount) : 0n,
-        ),
-      })
-    : null;
+        expenses: expenseAmounts,
+      });
+    } catch (error) {
+      if (!(error instanceof RangeError)) throw error;
+    }
+  }
   const pending = form.formState.isSubmitting;
 
   function changeOpen(open: boolean) {
@@ -82,6 +89,7 @@ export function SaleConfirmationDialog({
   }
 
   async function onSubmit(values: SaleInput) {
+    if (!metrics) return;
     if (metrics && metrics.netProfit < 0n && !lossConfirmed) {
       toast.error("Confirm that you understand this sale results in a loss");
       return;
@@ -125,13 +133,18 @@ export function SaleConfirmationDialog({
                 <span className="text-muted-foreground">
                   Purchase price{" "}
                   <Money
+                    currency={currency}
                     className="ml-1 text-foreground"
                     value={BigInt(listing.account.purchasePrice)}
                   />
                 </span>
                 <span className="text-right text-muted-foreground">
                   Original listing{" "}
-                  <Money className="ml-1 text-foreground" value={BigInt(listing.listingPrice)} />
+                  <Money
+                    currency={currency}
+                    className="ml-1 text-foreground"
+                    value={BigInt(listing.listingPrice)}
+                  />
                 </span>
               </div>
             </div>
@@ -146,6 +159,7 @@ export function SaleConfirmationDialog({
                     name="sellingPrice"
                     render={({ field }) => (
                       <MoneyInput
+                        currency={currency}
                         id="sale-selling-price"
                         value={field.value}
                         onChange={field.onChange}
@@ -221,6 +235,7 @@ export function SaleConfirmationDialog({
                       name={`expenses.${index}.amount`}
                       render={({ field: amountField }) => (
                         <MoneyInput
+                          currency={currency}
                           value={amountField.value}
                           onChange={amountField.onChange}
                           aria-label={`Expense ${index + 1} amount`}
@@ -253,17 +268,17 @@ export function SaleConfirmationDialog({
               {metrics ? (
                 <div className="space-y-2 rounded-lg border bg-muted/30 p-3 text-xs">
                   <SummaryRow label="Actual selling price">
-                    <Money value={BigInt(/^\d+$/.test(sellingPrice) ? sellingPrice : "0")} />
+                    <Money currency={currency} value={actualPrice} />
                   </SummaryRow>
                   <SummaryRow label="Original purchase price">
-                    <Money value={BigInt(listing.account.purchasePrice)} />
+                    <Money currency={currency} value={BigInt(listing.account.purchasePrice)} />
                   </SummaryRow>
                   <SummaryRow label="Total additional expenses">
-                    <Money value={metrics.totalExpenses} />
+                    <Money currency={currency} value={metrics.totalExpenses} />
                   </SummaryRow>
                   <Separator />
                   <SummaryRow label="Net profit">
-                    <Money value={metrics.netProfit} colored />
+                    <Money currency={currency} value={metrics.netProfit} colored />
                   </SummaryRow>
                   <SummaryRow
                     label="Profit margin"
@@ -271,7 +286,11 @@ export function SaleConfirmationDialog({
                   />
                   <SummaryRow label="Return on investment" value={formatPercentage(metrics.roi)} />
                 </div>
-              ) : null}
+              ) : (
+                <p role="alert" className="text-xs text-destructive">
+                  The combined transaction amounts exceed the supported range.
+                </p>
+              )}
               {metrics && metrics.netProfit < 0n ? (
                 <label className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
                   <TriangleAlert className="mt-0.5 size-4 shrink-0" />
@@ -282,8 +301,9 @@ export function SaleConfirmationDialog({
                     className="order-first mt-0.5 size-4 shrink-0 accent-destructive"
                   />
                   <span>
-                    This transaction results in a loss of <Money value={-metrics.netProfit} />.
-                    Confirm that you want to record it anyway.
+                    This transaction results in a loss of{" "}
+                    <Money currency={currency} value={-metrics.netProfit} />. Confirm that you want
+                    to record it anyway.
                   </span>
                 </label>
               ) : null}

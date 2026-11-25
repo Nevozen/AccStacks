@@ -2,16 +2,17 @@ import { Prisma } from "@/generated/prisma/client";
 import { buildListingCode } from "@/lib/codes";
 import { dateInputToUtc } from "@/lib/dates";
 import { AppError } from "@/lib/errors";
+import { parseMoneyInput } from "@/lib/money";
 import { normalizeCategory, normalizeName } from "@/lib/normalization";
 import {
   listingInputSchema,
   listingQuerySchema,
-  updateListingInputSchema,
   type ListingInput,
   type ListingQuery,
   type UpdateListingInput,
 } from "@/schemas/listing";
 import { db } from "@/server/db";
+import { requireCurrency } from "./settings";
 
 const listingInclude = {
   account: {
@@ -36,7 +37,8 @@ function emptyToNull(value?: string) {
 }
 
 export async function createListing(ownerId: string, input: ListingInput) {
-  const data = listingInputSchema.parse(input);
+  const currency = await requireCurrency(ownerId);
+  const data = listingInputSchema(currency).parse(input);
   return db.$transaction(async (tx) => {
     const locked = await tx.$queryRaw<{ id: string }[]>`
       SELECT id FROM "Account"
@@ -63,7 +65,7 @@ export async function createListing(ownerId: string, input: ListingInput) {
         listingCode: buildListingCode(account.accountCode, sequence),
         marketplace: normalizeName(data.marketplace),
         marketplaceNormalized: normalizeCategory(data.marketplace),
-        listingPrice: BigInt(data.listingPrice),
+        listingPrice: parseMoneyInput(data.listingPrice, currency)!,
         listingUrl: emptyToNull(data.listingUrl),
         listedAt: dateInputToUtc(data.listedAt),
         notes: emptyToNull(data.notes),
@@ -73,7 +75,8 @@ export async function createListing(ownerId: string, input: ListingInput) {
 }
 
 export async function updateListing(ownerId: string, listingId: string, input: UpdateListingInput) {
-  const data = updateListingInputSchema.parse(input);
+  const currency = await requireCurrency(ownerId);
+  const data = listingInputSchema(currency).omit({ accountId: true }).parse(input);
   const listing = await db.listing.findFirst({
     where: { id: listingId, status: "ACTIVE", account: { ownerId, deletedAt: null, sale: null } },
   });
@@ -84,7 +87,7 @@ export async function updateListing(ownerId: string, listingId: string, input: U
     data: {
       marketplace: normalizeName(data.marketplace),
       marketplaceNormalized: normalizeCategory(data.marketplace),
-      listingPrice: BigInt(data.listingPrice),
+      listingPrice: parseMoneyInput(data.listingPrice, currency)!,
       listingUrl: emptyToNull(data.listingUrl),
       listedAt: dateInputToUtc(data.listedAt),
       notes: emptyToNull(data.notes),

@@ -21,6 +21,7 @@ describe("sales chart data", () => {
         ],
       },
       timezone,
+      "IDR",
     );
 
     expect(result.map(({ period, sales }) => [period, sales])).toEqual([

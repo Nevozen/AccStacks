@@ -4,6 +4,7 @@ import { createThrottleKey, reserveRegistrationAttempt } from "@/server/auth-thr
 import { verifyCredentials } from "@/server/credentials";
 import { db } from "@/server/db";
 import { registerUser } from "@/services/registration";
+import { chooseCurrency, updateCapital } from "@/services/settings";
 import { testDb } from "./client";
 
 function signupInput() {
@@ -36,7 +37,7 @@ describe("registration", () => {
     expect(user.email).toBe(input.email);
     expect(await testDb.userSettings.findUnique({ where: { userId: user.id } })).toMatchObject({
       theme: "LIGHT",
-      currency: "IDR",
+      currency: null,
       timezone: "Asia/Jakarta",
       capital: null,
     });
@@ -44,6 +45,21 @@ describe("registration", () => {
       id: user.id,
       email: input.email,
       name: "New Reseller",
+    });
+  });
+
+  it("requires currency before recording capital and never relabels an existing balance", async () => {
+    const user = await registerUser(signupInput(), randomUUID());
+    await expect(updateCapital(user.id, "100")).rejects.toThrow(
+      "Choose your workspace currency first",
+    );
+    await expect(chooseCurrency(user.id, "EUR")).rejects.toMatchObject({ name: "ZodError" });
+    await chooseCurrency(user.id, "USD");
+    await updateCapital(user.id, "100.25");
+    await expect(chooseCurrency(user.id, "IDR")).rejects.toThrow("already set");
+    expect(await testDb.userSettings.findUnique({ where: { userId: user.id } })).toMatchObject({
+      currency: "USD",
+      capital: 10_025n,
     });
   });
 

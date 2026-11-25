@@ -1,53 +1,55 @@
 import { formatIsoInTimezone } from "@/lib/dates";
+import { csvMoney } from "@/lib/csv";
 import { calculatePercentage } from "@/lib/finance";
+import { moneyToDecimal } from "@/lib/money";
 import { getCompletedSalesExport } from "@/services/exports";
 import { getSettings } from "@/services/settings";
 import { csvResponse } from "@/server/csv-response";
 import { getSessionUser } from "@/server/session";
 
-const headers = [
-  "Sale ID",
-  "Account ID",
-  "Game",
-  "Account Name",
-  "Marketplace",
-  "Purchase Price Snapshot (IDR)",
-  "Original Listing Price (IDR)",
-  "Actual Selling Price (IDR)",
-  "Total Expenses (IDR)",
-  "Net Profit (IDR)",
-  "Profit Margin (%)",
-  "ROI (%)",
-  "Sale Date",
-  "Expense Breakdown",
-  "Transaction Notes",
-];
-
 export async function GET() {
   const user = await getSessionUser();
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
-  const [sales, settings] = await Promise.all([
-    getCompletedSalesExport(user.id),
-    getSettings(user.id),
-  ]);
+  const { currency, timezone } = await getSettings(user.id);
+  if (!currency)
+    return Response.json({ error: "Choose your workspace currency first" }, { status: 409 });
+  const sales = await getCompletedSalesExport(user.id);
   return csvResponse(
     "accstacks-completed-sales.csv",
-    headers,
+    [
+      "Sale ID",
+      "Account ID",
+      "Game",
+      "Account Name",
+      "Marketplace",
+      `Purchase Price Snapshot (${currency})`,
+      `Original Listing Price (${currency})`,
+      `Actual Selling Price (${currency})`,
+      `Total Expenses (${currency})`,
+      `Net Profit (${currency})`,
+      "Profit Margin (%)",
+      "ROI (%)",
+      "Sale Date",
+      "Expense Breakdown",
+      "Transaction Notes",
+    ],
     sales.map((sale) => [
       sale.id,
       sale.account.accountCode,
       sale.account.gameName,
       sale.account.accountName,
       sale.marketplace,
-      sale.purchasePrice,
-      sale.originalListingPrice,
-      sale.sellingPrice,
-      sale.totalExpenses,
-      sale.netProfit,
+      csvMoney(sale.purchasePrice, currency),
+      csvMoney(sale.originalListingPrice, currency),
+      csvMoney(sale.sellingPrice, currency),
+      csvMoney(sale.totalExpenses, currency),
+      csvMoney(sale.netProfit, currency),
       calculatePercentage(sale.netProfit, sale.sellingPrice) ?? "N/A",
       calculatePercentage(sale.netProfit, sale.purchasePrice) ?? "N/A",
-      formatIsoInTimezone(sale.soldAt, settings.timezone),
-      sale.expenses.map((expense) => `${expense.name}: ${expense.amount}`).join(" | "),
+      formatIsoInTimezone(sale.soldAt, timezone),
+      sale.expenses
+        .map((expense) => `${expense.name}: ${moneyToDecimal(expense.amount, currency)}`)
+        .join(" | "),
       sale.notes,
     ]),
   );

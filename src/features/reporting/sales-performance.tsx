@@ -9,10 +9,11 @@ export function SalesPerformance({
   data,
   period,
   timezone,
+  currency,
   className,
   children,
 }: ReportProps & { className?: string; children?: React.ReactNode }) {
-  const points = toSalesChartData(data, timezone);
+  const points = toSalesChartData(data, timezone, currency);
   return (
     <ReportPanel
       id="sales-performance"
@@ -37,7 +38,7 @@ export function SalesPerformance({
     >
       <div className="px-panel pb-panel">
         {points.length ? (
-          <SalesChart points={points} />
+          <SalesChart points={points} currency={currency} />
         ) : (
           <EmptyState
             icon={ChartNoAxesColumn}

@@ -7,18 +7,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/dates";
-import { formatPercentage } from "@/lib/money";
+import { formatPercentage, type Currency } from "@/lib/money";
 import type { ListingDto } from "./types";
 
 export function ListingCard({
   listing,
   timezone,
+  currency,
   onEdit,
   onDelete,
   onMarkSold,
 }: {
   listing: ListingDto;
   timezone: string;
+  currency: Currency;
   onEdit: () => void;
   onDelete: () => void;
   onMarkSold: () => void;
@@ -62,6 +64,7 @@ export function ListingCard({
         <div>
           <p className="text-muted-foreground">Asking price</p>
           <Money
+            currency={currency}
             className="mt-0.5 block text-base font-semibold wrap-anywhere"
             value={BigInt(listing.listingPrice)}
           />
@@ -69,6 +72,7 @@ export function ListingCard({
         <div>
           <p className="text-muted-foreground">Estimated profit</p>
           <Money
+            currency={currency}
             className="mt-0.5 block text-base font-semibold wrap-anywhere"
             value={BigInt(listing.estimatedProfit)}
             colored
@@ -77,6 +81,7 @@ export function ListingCard({
         <div>
           <p className="text-muted-foreground">Purchase price</p>
           <Money
+            currency={currency}
             className="mt-0.5 block wrap-anywhere"
             value={BigInt(listing.account.purchasePrice)}
           />

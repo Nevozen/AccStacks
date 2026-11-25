@@ -14,7 +14,7 @@ export async function provisionOwner(input: unknown) {
         name: credentials.name,
         email: credentials.email,
         passwordHash,
-        settings: { create: {} },
+        settings: { create: { currency: null } },
       },
       select: { id: true, name: true, email: true },
     });

@@ -9,5 +9,6 @@ export default async function AnalyticsPage({
 }: {
   searchParams: ReportSearchParams;
 }) {
-  return <AnalyticsWorkspace {...await loadReport(searchParams, "analytics")} />;
+  const report = await loadReport(searchParams, "analytics");
+  return report ? <AnalyticsWorkspace {...report} /> : null;
 }

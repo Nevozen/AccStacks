@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { Money } from "@/components/shared/money";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
+import type { Currency } from "@/lib/money";
 import { FinancialPosition, InventoryOverview, ProfitOverview } from "./overview-cards";
 import { PeriodPicker } from "./period-picker";
 import { RecentSales } from "./recent-sales";
@@ -11,7 +12,7 @@ import { ReportActions, ReportLink, ReportPanel, type ReportProps } from "./repo
 import { SalesPerformance } from "./sales-performance";
 
 export function OverviewWorkspace(props: ReportProps) {
-  const { data, period, timezone } = props;
+  const { data, period, timezone, currency } = props;
   const analyticsHref = reportHref("/analytics", period);
 
   return (
@@ -33,9 +34,14 @@ export function OverviewWorkspace(props: ReportProps) {
       <div className="grid gap-grid md:grid-cols-12">
         <FinancialPosition
           {...data.capitalPosition}
+          currency={currency}
           inventoryValue={data.inventory.inventoryValue}
         />
-        <ProfitOverview financial={data.financial} comparison={data.comparison} />
+        <ProfitOverview
+          financial={data.financial}
+          comparison={data.comparison}
+          currency={currency}
+        />
         <SalesPerformance {...props} className="md:col-span-7" />
         <InventoryOverview inventory={data.inventory} />
         {data.financial.completedSales > 0 ? (
@@ -64,6 +70,7 @@ export function OverviewWorkspace(props: ReportProps) {
                       </p>
                     </div>
                     <Money
+                      currency={currency}
                       value={game.netProfit}
                       colored
                       className="max-w-[45%] text-right text-sm wrap-anywhere"
@@ -72,16 +79,22 @@ export function OverviewWorkspace(props: ReportProps) {
                 ))}
               </ol>
             </ReportPanel>
-            <SalesSummary financial={data.financial} />
+            <SalesSummary financial={data.financial} currency={currency} />
           </>
         ) : null}
-        <RecentSales sales={data.recentSales} timezone={timezone} />
+        <RecentSales sales={data.recentSales} timezone={timezone} currency={currency} />
       </div>
     </div>
   );
 }
 
-function SalesSummary({ financial }: { financial: ReportProps["data"]["financial"] }) {
+function SalesSummary({
+  financial,
+  currency,
+}: {
+  financial: ReportProps["data"]["financial"];
+  currency: Currency;
+}) {
   const items = [
     { label: "Completed Sales", value: financial.completedSales },
     {
@@ -90,7 +103,7 @@ function SalesSummary({ financial }: { financial: ReportProps["data"]["financial
         financial.averageProfitPerSale === null ? (
           "N/A"
         ) : (
-          <Money value={financial.averageProfitPerSale} colored />
+          <Money currency={currency} value={financial.averageProfitPerSale} colored />
         ),
     },
     {
@@ -99,7 +112,7 @@ function SalesSummary({ financial }: { financial: ReportProps["data"]["financial
         financial.averageSellingPrice === null ? (
           "N/A"
         ) : (
-          <Money value={financial.averageSellingPrice} />
+          <Money currency={currency} value={financial.averageSellingPrice} />
         ),
     },
   ];

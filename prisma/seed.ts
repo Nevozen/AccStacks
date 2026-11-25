@@ -3,6 +3,7 @@ import { dateToInput } from "../src/lib/dates";
 import { createAccount } from "../src/services/accounts";
 import { createListing } from "../src/services/listings";
 import { confirmSale } from "../src/services/sales";
+import { chooseCurrency, getSettings } from "../src/services/settings";
 import { db } from "../src/server/db";
 import { provisionOwner } from "../src/server/owner";
 
@@ -23,6 +24,9 @@ async function main() {
     console.log("Seed skipped: this owner already has account records");
     return;
   }
+  const { currency } = await getSettings(owner.id);
+  if (currency === "USD") throw new Error("The development sample data is denominated in IDR");
+  if (currency === null) await chooseCurrency(owner.id, "IDR");
 
   const now = Date.now();
   const available = await createAccount(owner.id, {

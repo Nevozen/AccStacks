@@ -1,12 +1,14 @@
-import { formatMoney } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export function Money({
   value,
+  currency,
   colored = false,
   className,
 }: {
   value: bigint | number;
+  currency: Currency;
   colored?: boolean;
   className?: string;
 }) {
@@ -19,7 +21,7 @@ export function Money({
         className,
       )}
     >
-      {formatMoney(value)}
+      {formatMoney(value, currency)}
     </span>
   );
 }

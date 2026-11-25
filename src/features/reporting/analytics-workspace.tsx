@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatPercentage } from "@/lib/money";
+import { formatPercentage, type Currency } from "@/lib/money";
 import { PeriodPicker } from "./period-picker";
 import { formatReportPeriod } from "./report-period";
 import {
@@ -24,7 +24,7 @@ import {
 import { SalesPerformance } from "./sales-performance";
 
 export function AnalyticsWorkspace(props: ReportProps) {
-  const { data, period } = props;
+  const { data, period, currency } = props;
   const { financial, inventory, comparison } = data;
   const costs = [
     { label: "Cost of Goods Sold", value: financial.costOfGoodsSold },
@@ -53,7 +53,11 @@ export function AnalyticsWorkspace(props: ReportProps) {
             <div>
               <dt className="text-xs text-muted-foreground">Total Revenue</dt>
               <dd className="mt-1 text-xl tracking-tight wrap-anywhere">
-                <Money value={financial.totalRevenue} className="font-semibold" />
+                <Money
+                  currency={currency}
+                  value={financial.totalRevenue}
+                  className="font-semibold"
+                />
               </dd>
               {comparison.label ? (
                 <dd>
@@ -64,7 +68,12 @@ export function AnalyticsWorkspace(props: ReportProps) {
             <div>
               <dt className="text-xs text-muted-foreground">Net Profit</dt>
               <dd className="mt-1 text-xl tracking-tight wrap-anywhere">
-                <Money value={financial.netProfit} colored className="font-semibold" />
+                <Money
+                  currency={currency}
+                  value={financial.netProfit}
+                  colored
+                  className="font-semibold"
+                />
               </dd>
               {comparison.label ? (
                 <dd>
@@ -78,7 +87,7 @@ export function AnalyticsWorkspace(props: ReportProps) {
               <div key={label} className="flex justify-between gap-3 py-2 text-sm">
                 <dt className="text-muted-foreground">{label}</dt>
                 <dd className="text-right">
-                  <Money value={value} />
+                  <Money currency={currency} value={value} />
                 </dd>
               </div>
             ))}
@@ -114,6 +123,7 @@ export function AnalyticsWorkspace(props: ReportProps) {
               </dt>
               <dd className="mt-0.5 text-2xl tracking-tight wrap-anywhere">
                 <Money
+                  currency={currency}
                   value={inventory.estimatedUnrealizedProfit}
                   colored
                   className="font-semibold"
@@ -127,7 +137,7 @@ export function AnalyticsWorkspace(props: ReportProps) {
               <div className="flex justify-between gap-3 border-t py-2 text-sm">
                 <dt className="text-muted-foreground">Inventory Value</dt>
                 <dd className="text-right">
-                  <Money value={inventory.inventoryValue} />
+                  <Money currency={currency} value={inventory.inventoryValue} />
                 </dd>
               </div>
               <div className="flex justify-between gap-3 pt-2 text-sm">
@@ -139,7 +149,7 @@ export function AnalyticsWorkspace(props: ReportProps) {
         </ReportPanel>
         <SalesPerformance {...props} className="md:col-span-12">
           {data.monthlySales.length ? (
-            <MonthlySales data={data.monthlySales} comparison={comparison} />
+            <MonthlySales data={data.monthlySales} comparison={comparison} currency={currency} />
           ) : null}
         </SalesPerformance>
         {data.gamePerformance.length ? (
@@ -149,12 +159,14 @@ export function AnalyticsWorkspace(props: ReportProps) {
               id="game-profitability"
               nameLabel="Game"
               rows={data.gamePerformance}
+              currency={currency}
             />
             <SalesBreakdown
               title="Marketplace revenue"
               id="marketplace-revenue"
               nameLabel="Marketplace"
               rows={data.marketplacePerformance}
+              currency={currency}
             />
           </>
         ) : null}
@@ -198,9 +210,11 @@ export function AnalyticsWorkspace(props: ReportProps) {
 function MonthlySales({
   data,
   comparison,
+  currency,
 }: {
   data: ReportProps["data"]["monthlySales"];
   comparison: ReportProps["data"]["comparison"];
+  currency: Currency;
 }) {
   return (
     <details className="group border-t">
@@ -231,10 +245,10 @@ function MonthlySales({
               </TableCell>
               <TableCell className="text-right tabular-nums">{row.sales.toString()}</TableCell>
               <TableCell className="text-right">
-                <Money value={row.revenue} />
+                <Money currency={currency} value={row.revenue} />
               </TableCell>
               <TableCell className="pr-panel text-right">
-                <Money value={row.netProfit} colored />
+                <Money currency={currency} value={row.netProfit} colored />
               </TableCell>
             </TableRow>
           ))}
@@ -249,11 +263,13 @@ function SalesBreakdown({
   title,
   nameLabel,
   rows,
+  currency,
 }: {
   id: string;
   title: string;
   nameLabel: string;
   rows: ReportProps["data"]["gamePerformance"];
+  currency: Currency;
 }) {
   return (
     <ReportPanel id={id} title={title} scope="Selected period" className="md:col-span-6">
@@ -274,10 +290,10 @@ function SalesBreakdown({
               </TableCell>
               <TableCell className="text-right tabular-nums">{row.sales.toString()}</TableCell>
               <TableCell className="text-right">
-                <Money value={row.revenue} />
+                <Money currency={currency} value={row.revenue} />
               </TableCell>
               <TableCell className="pr-panel text-right">
-                <Money value={row.netProfit} colored />
+                <Money currency={currency} value={row.netProfit} colored />
               </TableCell>
             </TableRow>
           ))}
