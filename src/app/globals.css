@@ -162,7 +162,8 @@
   display: grid;
   width: 1.875rem;
   height: 1.875rem;
-  place-items: center;
+  /* Center the grid track itself to override Sonner's start alignment. */
+  place-content: center;
 }
 
 .workspace-toaster [data-sonner-toast][data-styled="true"] [data-icon] {
