@@ -12,7 +12,7 @@ export function AccountStatusBadge({
   return (
     <Badge
       variant={status === "AVAILABLE" ? "success" : status === "LISTED" ? "info" : "secondary"}
-      className={cn("uppercase", status === "SOLD" && "bg-foreground text-background", className)}
+      className={cn("text-[11px] tracking-wide uppercase", className)}
     >
       {status}
     </Badge>

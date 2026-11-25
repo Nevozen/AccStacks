@@ -6,7 +6,9 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Select = SelectPrimitive.Root;
-export const SelectValue = SelectPrimitive.Value;
+export function SelectValue(props: React.ComponentProps<typeof SelectPrimitive.Value>) {
+  return <SelectPrimitive.Value data-slot="select-value" {...props} />;
+}
 
 export function SelectTrigger({
   className,
@@ -16,7 +18,7 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm whitespace-nowrap shadow-xs focus:border-ring focus:ring-[3px] focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:shrink-0",
+        "flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-input bg-card px-3 text-sm whitespace-nowrap hover:border-ring/60 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:shrink-0 [&_[data-slot=select-value]]:truncate",
         className,
       )}
       {...props}
@@ -40,7 +42,7 @@ export function SelectContent({
       <SelectPrimitive.Content
         position={position}
         className={cn(
-          "z-50 max-h-72 min-w-[8rem] overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          "z-50 max-h-72 min-w-[8rem] overflow-y-auto rounded-lg border bg-popover text-popover-foreground shadow-overlay",
           position === "popper" && "w-[var(--radix-select-trigger-width)]",
           className,
         )}

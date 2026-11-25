@@ -5,9 +5,8 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import {
-  ChevronsUpDown,
+  ChevronDown,
   LayoutDashboard,
-  Layers3,
   LogOut,
   Menu,
   Package,
@@ -15,6 +14,7 @@ import {
   PanelLeftOpen,
   Settings,
   Store,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,11 +25,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "./theme-switcher";
 import { GlobalSearch } from "./global-search";
+import { BrandMark } from "./public-brand";
 
 const navigation = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
@@ -37,112 +44,100 @@ const navigation = [
   { href: "/listings", label: "Listings", icon: Store },
 ] as const;
 
-function Brand({ collapsed = false }: { collapsed?: boolean }) {
+function WorkspaceBrand({
+  collapsed = false,
+  onClick,
+}: {
+  collapsed?: boolean;
+  onClick?: () => void;
+}) {
   return (
-    <Link href="/overview" className="flex h-12 items-center gap-2.5 px-2">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <Layers3 className="size-4" aria-hidden="true" />
+    <Link
+      href="/overview"
+      onClick={onClick}
+      className="inline-flex w-fit items-center gap-2.5 rounded-lg"
+    >
+      <BrandMark className="bg-equity text-equity-foreground" />
+      <span className={cn("text-base font-semibold tracking-[-0.045em]", collapsed && "sr-only")}>
+        AccStacks
       </span>
-      {!collapsed ? (
-        <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold tracking-tight">AccStacks</span>
-          <span className="block truncate text-[10px] text-muted-foreground">Wardana Dev</span>
-        </span>
-      ) : null}
     </Link>
   );
 }
 
-function Navigation({
-  collapsed = false,
-  onNavigate,
+function NavigationLink({
+  href,
+  label,
+  icon: Icon,
+  collapsed,
+  onClick,
 }: {
-  collapsed?: boolean;
-  onNavigate?: () => void;
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  collapsed: boolean;
+  onClick?: () => void;
 }) {
   const pathname = usePathname();
-  return (
-    <nav className="flex flex-1 flex-col gap-1 px-2 py-3" aria-label="Primary navigation">
-      {navigation.map(({ href, label, icon: Icon }) => {
-        const active = pathname === href || pathname.startsWith(`${href}/`);
-        const link = (
-          <Link
-            href={href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex h-9 items-center gap-3 rounded-md px-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/40",
-              active && "bg-accent text-foreground",
-              collapsed && "justify-center px-0",
-            )}
-          >
-            <Icon className="size-4 shrink-0" aria-hidden="true" />
-            {collapsed ? <span className="sr-only">{label}</span> : label}
-          </Link>
-        );
-        return collapsed ? (
-          <Tooltip key={href}>
-            <TooltipTrigger asChild>{link}</TooltipTrigger>
-            <TooltipContent side="right">{label}</TooltipContent>
-          </Tooltip>
-        ) : (
-          <div key={href}>{link}</div>
-        );
-      })}
-    </nav>
+  const active = pathname === href || pathname.startsWith(`${href}/`);
+  const link = (
+    <Link
+      href={href}
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "relative flex min-h-10 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground",
+        active &&
+          "bg-accent font-semibold text-accent-foreground hover:bg-accent hover:text-accent-foreground",
+        collapsed && "justify-center px-0",
+      )}
+    >
+      <Icon className="size-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+      {collapsed ? <span className="sr-only">{label}</span> : label}
+      {active && !collapsed ? (
+        <span className="ml-auto size-1.5 rounded-full bg-accent-foreground" aria-hidden="true" />
+      ) : null}
+    </Link>
+  );
+
+  return collapsed ? (
+    <Tooltip>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
+  ) : (
+    link
   );
 }
 
-function AccountMenu({
-  user,
-  collapsed = false,
-}: {
-  user: { name: string; email: string };
-  collapsed?: boolean;
-}) {
+function AccountMenu({ user }: { user: { name: string; email: string } }) {
   const initials = user.name
-    .split(" ")
+    .trim()
+    .split(/\s+/u)
+    .slice(0, 2)
     .map((part) => part[0])
     .join("")
-    .slice(0, 2)
     .toUpperCase();
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size={collapsed ? "icon" : "sm"}
-          className={cn(collapsed ? "" : "h-auto w-full justify-start gap-2 px-2 py-2")}
+          aria-label={`${user.name || "AccStacks Owner"} account menu`}
+          className="gap-1 rounded-full px-1.5"
         >
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
             {initials || "AS"}
           </span>
-          {!collapsed ? (
-            <>
-              <span className="min-w-0 flex-1 text-left">
-                <span className="block truncate text-xs font-medium">{user.name}</span>
-                <span className="block truncate text-[10px] font-normal text-muted-foreground">
-                  {user.email}
-                </span>
-              </span>
-              <ChevronsUpDown className="size-3.5 text-muted-foreground" aria-hidden="true" />
-            </>
-          ) : null}
-          {collapsed ? <span className="sr-only">Account menu</span> : null}
+          <ChevronDown className="hidden text-muted-foreground sm:block" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" side="top" className="w-56">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <span className="block text-foreground">{user.name}</span>
           <span className="block truncate">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/settings">
-            <Settings aria-hidden="true" /> Settings
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void signOut({ callbackUrl: "/login" })}>
           <LogOut aria-hidden="true" /> Sign out
         </DropdownMenuItem>
@@ -151,23 +146,54 @@ function AccountMenu({
   );
 }
 
-function SidebarFooter({
-  user,
-  collapsed,
+function Sidebar({
+  collapsed = false,
   version,
+  onNavigate,
 }: {
-  user: { name: string; email: string };
-  collapsed: boolean;
+  collapsed?: boolean;
   version: string;
+  onNavigate?: () => void;
 }) {
   return (
-    <div className={cn("space-y-1 border-t p-2", collapsed && "flex flex-col items-center")}>
-      <ThemeSwitcher collapsed={collapsed} />
-      <AccountMenu user={user} collapsed={collapsed} />
-      {!collapsed ? (
-        <p className="px-2 pt-1 text-[10px] text-muted-foreground">AccStacks v{version}</p>
-      ) : null}
-    </div>
+    <>
+      <div
+        className={cn("flex h-14 shrink-0 items-center px-4", collapsed && "justify-center p-0")}
+      >
+        <WorkspaceBrand collapsed={collapsed} onClick={onNavigate} />
+      </div>
+      <nav
+        className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2.5 py-3"
+        aria-label="Primary navigation"
+      >
+        <p
+          className={cn(
+            "px-2.5 pb-1 font-mono text-[11px] font-medium tracking-wide text-muted-foreground uppercase",
+            collapsed && "sr-only",
+          )}
+        >
+          Workspace
+        </p>
+        {navigation.map((item) => (
+          <NavigationLink key={item.href} {...item} collapsed={collapsed} onClick={onNavigate} />
+        ))}
+        <div className="mt-auto pt-4">
+          <NavigationLink
+            href="/settings"
+            label="Settings"
+            icon={Settings}
+            collapsed={collapsed}
+            onClick={onNavigate}
+          />
+        </div>
+      </nav>
+      <div className={cn("border-t px-2.5 py-2", collapsed && "flex justify-center")}>
+        <ThemeSwitcher collapsed={collapsed} />
+        {!collapsed ? (
+          <p className="px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground">v{version}</p>
+        ) : null}
+      </div>
+    </>
   );
 }
 
@@ -180,84 +206,74 @@ export function AppShell({
   user: { name: string; email: string };
   version: string;
 }) {
-  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const title =
-    navigation.find((item) => pathname.startsWith(item.href))?.label ??
-    (pathname.startsWith("/settings") ? "Settings" : "AccStacks");
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside
-        className={cn(
-          "sticky top-0 hidden h-screen shrink-0 flex-col border-r bg-card transition-[width] lg:flex",
-          collapsed ? "w-16" : "w-60",
-        )}
-      >
-        <div
+    <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+      <div className="flex min-h-svh bg-background">
+        <a
+          href="#workspace-content"
+          className="sr-only z-50 rounded-md bg-card px-4 py-2 focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+        >
+          Skip to content
+        </a>
+        <aside
           className={cn(
-            "flex items-center border-b px-2",
-            collapsed ? "justify-center" : "justify-between",
+            "sticky top-0 hidden h-svh shrink-0 flex-col border-r bg-card lg:flex",
+            collapsed ? "w-16" : "w-52",
           )}
         >
-          <Brand collapsed={collapsed} />
-          {!collapsed ? (
-            <Button variant="ghost" size="icon-sm" onClick={() => setCollapsed(true)}>
-              <PanelLeftClose aria-hidden="true" />
-              <span className="sr-only">Collapse sidebar</span>
+          <Sidebar collapsed={collapsed} version={version} />
+        </aside>
+        <div className="min-w-0 flex-1">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-card px-4 md:px-6">
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                aria-label="Open navigation"
+              >
+                <Menu aria-hidden="true" />
+              </Button>
+            </SheetTrigger>
+            <div className="lg:hidden">
+              <WorkspaceBrand />
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden text-muted-foreground lg:inline-flex"
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-expanded={!collapsed}
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              {collapsed ? (
+                <PanelLeftOpen aria-hidden="true" />
+              ) : (
+                <PanelLeftClose aria-hidden="true" />
+              )}
             </Button>
-          ) : null}
-        </div>
-        {collapsed ? (
-          <div className="flex justify-center pt-2">
-            <Button variant="ghost" size="icon-sm" onClick={() => setCollapsed(false)}>
-              <PanelLeftOpen aria-hidden="true" />
-              <span className="sr-only">Expand sidebar</span>
-            </Button>
-          </div>
-        ) : null}
-        <Navigation collapsed={collapsed} />
-        <SidebarFooter user={user} collapsed={collapsed} version={version} />
-      </aside>
-
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-72 gap-0 p-0 lg:hidden">
-          <div className="border-b px-2 py-1">
-            <Brand />
-          </div>
-          <SheetTitle className="sr-only">Application navigation</SheetTitle>
-          <SheetDescription className="sr-only">
-            Navigate between AccStacks modules
-          </SheetDescription>
-          <Navigation onNavigate={() => setMobileOpen(false)} />
-          <SidebarFooter user={user} collapsed={false} version={version} />
-        </SheetContent>
-      </Sheet>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/90 px-4 backdrop-blur md:px-6">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="lg:hidden"
-            onClick={() => setMobileOpen(true)}
+            <div className="ml-auto flex items-center gap-2 md:gap-3">
+              <GlobalSearch />
+              <AccountMenu user={user} />
+            </div>
+          </header>
+          <main
+            id="workspace-content"
+            tabIndex={-1}
+            className="mx-auto w-full max-w-[96rem] scroll-mt-14 px-4 py-5 outline-none sm:px-6 lg:px-7 lg:py-6"
           >
-            <Menu aria-hidden="true" />
-            <span className="sr-only">Open navigation</span>
-          </Button>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{title}</p>
-            <p className="hidden text-xs text-muted-foreground sm:block">
-              Stack Accounts. Track Profits.
-            </p>
-          </div>
-          <div className="ml-auto">
-            <GlobalSearch />
-          </div>
-        </header>
-        <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+      <SheetContent side="left" className="w-[min(85vw,18rem)] gap-0 p-0 lg:hidden">
+        <SheetTitle className="sr-only">Application navigation</SheetTitle>
+        <SheetDescription className="sr-only">Navigate between AccStacks modules</SheetDescription>
+        <Sidebar version={version} onNavigate={() => setMobileOpen(false)} />
+      </SheetContent>
+    </Sheet>
   );
 }

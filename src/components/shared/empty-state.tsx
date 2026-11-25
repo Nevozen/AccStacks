@@ -7,26 +7,31 @@ export function EmptyState({
   description,
   action,
   className,
+  variant = "panel",
 }: {
   icon: LucideIcon;
   title: string;
   description: string;
   action?: React.ReactNode;
   className?: string;
+  variant?: "panel" | "inline";
 }) {
   return (
     <div
       className={cn(
-        "flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed bg-card/50 px-6 py-12 text-center",
+        "flex flex-wrap items-center gap-3",
+        variant === "panel" && "rounded-xl border bg-card p-panel sm:px-5 sm:py-6",
         className,
       )}
     >
-      <span className="mb-3 flex size-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-        <Icon className="size-5" aria-hidden="true" />
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent text-accent-foreground">
+        <Icon className="size-4" aria-hidden="true" />
       </span>
-      <h2 className="text-sm font-semibold">{title}</h2>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
-      {action ? <div className="mt-4">{action}</div> : null}
+      <div className="min-w-48 flex-1">
+        <p className="text-sm font-semibold">{title}</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+      </div>
+      {action ? <div className="max-w-full">{action}</div> : null}
     </div>
   );
 }

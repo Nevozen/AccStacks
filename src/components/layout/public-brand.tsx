@@ -1,15 +1,27 @@
 import Link from "next/link";
 import { Layers3 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export function BrandMark({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-mark text-brand-mark-foreground",
+        className,
+      )}
+    >
+      <Layers3 className="size-4" aria-hidden="true" />
+    </span>
+  );
+}
 
 export function PublicBrand() {
   return (
     <Link
       href="/"
-      className="inline-flex w-fit shrink-0 items-center gap-2 rounded-lg font-semibold tracking-[-0.045em] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4"
+      className="inline-flex w-fit shrink-0 items-center gap-2 rounded-lg font-semibold tracking-[-0.045em]"
     >
-      <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <Layers3 className="size-4" aria-hidden="true" />
-      </span>
+      <BrandMark className="rounded-[10px]" />
       AccStacks
     </Link>
   );

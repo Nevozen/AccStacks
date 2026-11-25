@@ -21,19 +21,19 @@ export function SheetContent({
 }) {
   return (
     <SheetPrimitive.Portal>
-      <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-black/55 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+      <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-black/45" />
       <SheetPrimitive.Content
         className={cn(
-          "fixed inset-y-0 z-50 flex w-[min(92vw,32rem)] flex-col gap-4 overflow-y-auto border bg-popover p-5 text-popover-foreground shadow-lg outline-none data-[state=closed]:animate-out data-[state=open]:animate-in",
+          "fixed inset-y-0 z-50 flex w-[min(92vw,32rem)] flex-col gap-4 overflow-y-auto border bg-popover p-5 text-popover-foreground shadow-overlay outline-none motion-safe:data-[state=open]:animate-in",
           side === "right"
-            ? "right-0 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right"
-            : "left-0 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+            ? "right-0 border-l motion-safe:data-[state=open]:slide-in-from-right"
+            : "left-0 border-r motion-safe:data-[state=open]:slide-in-from-left",
           className,
         )}
         {...props}
       >
         {children}
-        <SheetPrimitive.Close className="absolute top-4 right-4 rounded-sm p-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/40">
+        <SheetPrimitive.Close className="absolute top-3 right-3 grid size-8 place-items-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground">
           <X className="size-4" aria-hidden="true" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>

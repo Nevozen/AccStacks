@@ -1,13 +1,11 @@
 .landing {
-  --paper: #fff;
-  --ink: #16241c;
-  --muted: #506159;
-  --line: #e0e9e1;
-  --surface: #f7faf7;
-  --green: #296746;
-  --green-wash: #eaf6e8;
-  --lime: #d0f484;
-  --lime-hover: #bce86c;
+  --paper: var(--brand-paper);
+  --ink: var(--brand-ink);
+  --muted: var(--brand-muted);
+  --line: var(--brand-line);
+  --surface: var(--brand-surface);
+  --green: var(--brand-green);
+  --green-wash: var(--brand-wash);
   --grid: #eaf0eb;
   --haze: #ecf8e6;
   --wave-back: #d8eed0;
@@ -20,13 +18,6 @@
 }
 
 :global(.dark) .landing {
-  --paper: #141b17;
-  --ink: #edf6ef;
-  --muted: #aabeaf;
-  --line: #32443a;
-  --surface: #1c2820;
-  --green: #a1ddb0;
-  --green-wash: #243a2b;
   --grid: #223126;
   --haze: #1f3426;
   --wave-back: #274632;
@@ -123,13 +114,13 @@
 }
 
 .primaryButton {
-  border-color: #afd768;
-  background: var(--lime);
-  color: #17270e;
+  border-color: var(--brand-lime-border);
+  background: var(--brand-lime);
+  color: var(--brand-lime-ink);
 }
 
 .primaryButton:hover {
-  background: var(--lime-hover);
+  background: var(--brand-lime-hover);
 }
 
 .secondaryButton {
