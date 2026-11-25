@@ -11,6 +11,15 @@ import { db } from "./db";
 const DUMMY_PASSWORD_HASH =
   "$argon2id$v=19$m=19456,t=2,p=1$MmJC4G7DVTt9xAQO3PLUxQ$QZGN5vEsrWtzNBAWHrQsa/l19ItJRTTg5cpcwzZImDQ";
 
+export function hashPassword(password: string) {
+  return argon2.hash(password, {
+    type: argon2.argon2id,
+    memoryCost: 19_456,
+    timeCost: 2,
+    parallelism: 1,
+  });
+}
+
 export async function verifyCredentials(input: unknown, clientIdentifier: string) {
   const parsed = signInSchema.safeParse(input);
   if (!parsed.success) return null;

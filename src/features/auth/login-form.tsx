@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Layers3, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter();
@@ -23,15 +27,11 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
         password: form.get("password"),
         redirect: false,
       });
-      if (result?.error) {
+      if (!result?.ok || result.error) {
         setError("Invalid email or password, or too many attempts. Please try again later.");
         return;
       }
-      const destination =
-        callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") && !callbackUrl.includes("\\")
-          ? callbackUrl
-          : "/";
-      router.push(destination);
+      router.replace(callbackUrl);
       router.refresh();
     } catch {
       setError("Unable to sign in. Please try again.");
@@ -41,23 +41,12 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-xl border border-black/10 bg-card p-6 shadow-sm dark:border-white/10">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="flex size-10 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-          <Layers3 className="size-5" aria-hidden="true" />
-        </span>
-        <div>
-          <h1 className="font-semibold tracking-tight">Sign in to AccStacks</h1>
-          <p className="text-sm text-muted-foreground">Private reseller workspace</p>
-        </div>
-      </div>
+    <>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-1.5">
-          <label className="text-sm font-medium" htmlFor="email">
-            Email
-          </label>
-          <input
-            className="h-10 w-full rounded-md border border-black/10 bg-transparent px-3 text-sm outline-none focus:border-neutral-500 dark:border-white/15"
+          <Label htmlFor="email">Email</Label>
+          <Input
+            className="h-10"
             id="email"
             name="email"
             type="email"
@@ -68,11 +57,9 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-sm font-medium" htmlFor="password">
-            Password
-          </label>
-          <input
-            className="h-10 w-full rounded-md border border-black/10 bg-transparent px-3 text-sm outline-none focus:border-neutral-500 dark:border-white/15"
+          <Label htmlFor="password">Password</Label>
+          <Input
+            className="h-10"
             id="password"
             name="password"
             type="password"
@@ -83,20 +70,21 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
           />
         </div>
         {error ? (
-          <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+          <p className="text-sm text-destructive" role="alert">
             {error}
           </p>
         ) : null}
-        <button
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-medium text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
-          type="submit"
-          disabled={pending}
-        >
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {pending ? "Signing in…" : "Sign in"}
-        </button>
+        <Button size="lg" className="w-full" type="submit" disabled={pending}>
+          {pending ? <Loader2 className="motion-safe:animate-spin" aria-hidden="true" /> : null}
+          {pending ? "Signing in..." : "Sign in"}
+        </Button>
       </form>
-      <p className="mt-5 text-center text-xs text-muted-foreground">Developed by Wardana Dev</p>
-    </div>
+      <p className="mt-5 text-center text-sm text-muted-foreground">
+        New to AccStacks?{" "}
+        <Link className="font-medium text-foreground underline underline-offset-4" href="/register">
+          Create an account
+        </Link>
+      </p>
+    </>
   );
 }

@@ -1,5 +1,7 @@
-import { redirect } from "next/navigation";
+import { LandingPage } from "@/features/landing/landing-page";
+import { getSessionUser } from "@/server/session";
 
-export default function HomePage() {
-  redirect("/overview");
+export default async function HomePage() {
+  const user = await getSessionUser();
+  return <LandingPage signedIn={Boolean(user)} />;
 }

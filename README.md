@@ -189,21 +189,21 @@ erDiagram
    pnpm db:migrate
    ```
 
-4. Set `OWNER_NAME`, `OWNER_EMAIL`, and a unique strong `OWNER_PASSWORD` in `.env`, then provision the private owner:
-
-   ```bash
-   pnpm auth:create-owner
-   ```
-
-   Public registration is disabled. The same command can provision a demo owner for the optional development seed using the `SEED_OWNER_*` variables. Run `pnpm db:seed` only when sample data is explicitly wanted; it is blocked in production and skipped when the owner already has records.
-
-5. Start the application:
+4. Start the application:
 
    ```bash
    pnpm dev
    ```
 
-   Open `http://localhost:3000`, sign in, and the Overview, Stocks, Listings, and Settings workspace will be available.
+   Open `http://localhost:3000` and select **Create account** to register with an email and password, or **Sign in** if you already have an account. Registration opens your private workspace; enter starting capital once to finish setup. Zero is valid.
+
+5. Optional: Provision a specific workspace owner from the terminal by setting `OWNER_NAME`, `OWNER_EMAIL`, and a unique strong `OWNER_PASSWORD` in `.env`:
+
+   ```bash
+   pnpm auth:create-owner
+   ```
+
+   This command updates the password if the configured email already exists. For sample data, set the `SEED_OWNER_*` variables and run `pnpm db:seed` only when explicitly wanted; it is blocked in production and skips inserting records when the demo owner already has stock.
 
 ### Automated checks
 
@@ -249,6 +249,8 @@ Integration and E2E tests always require a database name ending in `_test`; deve
 - [x] Automated tests and Docker deployment
 
 ## Security & Responsible Use
+
+The landing page and registration are public; inventory, listings, sales, and reports are private to the workspace owner. Registration uses rate-limited email and password credentials. Email verification and self-service password recovery are not available.
 
 AccStacks is intended to manage business records, not game account credentials. Do not store passwords, recovery codes, or other sensitive login information in account descriptions or notes. Private inventory and financial data should be protected by authentication before deployment.
 

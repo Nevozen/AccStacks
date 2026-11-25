@@ -13,7 +13,16 @@ export const signInSchema = z.object({
 });
 
 export const ownerCredentialsSchema = z.object({
-  name: z.string().trim().min(1).max(100),
+  name: z.string().trim().min(1, "Enter your name.").max(100),
   email: emailSchema,
-  password: z.string().min(12).max(256),
+  password: z.string().min(12, "Use at least 12 characters.").max(256),
 });
+
+export const registrationSchema = ownerCredentialsSchema
+  .extend({
+    confirmPassword: z.string().min(1, "Confirm your password.").max(256),
+  })
+  .refine(({ password, confirmPassword }) => password === confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match.",
+  });

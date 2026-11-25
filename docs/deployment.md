@@ -1,6 +1,6 @@
 # Self-Hosting AccStacks
 
-AccStacks is designed for a single-owner VPS deployment using Docker Compose and PostgreSQL. No external deployment is performed by the project automation.
+AccStacks is designed for self-hosting on a VPS using Docker Compose and PostgreSQL. Each user owns their private workspace. No external deployment is performed by the project automation.
 
 ## Requirements
 
@@ -54,7 +54,7 @@ docker compose -f compose.prod.yaml --profile migrate run --rm migrator
 
 The `migrator` profile is explicit; starting the app does not silently migrate the database.
 
-Provision the private owner. This command starts a temporary migrator-container environment with production dependencies:
+Optional: provision a specific workspace owner instead of using browser registration. This command starts a temporary migrator-container environment with production dependencies:
 
 ```bash
 docker compose -f compose.prod.yaml --profile migrate run --rm \
@@ -62,7 +62,7 @@ docker compose -f compose.prod.yaml --profile migrate run --rm \
   migrator pnpm auth:create-owner
 ```
 
-Public registration is not available. Re-running owner provisioning with the same email updates that owner's password; use it carefully.
+Re-running owner provisioning updates the password of the account with the configured email; use it carefully.
 
 ## 3. Start and verify
 
@@ -77,6 +77,8 @@ A healthy response is `{"status":"ok","database":"connected"}`. Inspect logs wit
 ```bash
 docker compose -f compose.prod.yaml logs --tail=100 app db
 ```
+
+The public landing page at `/` links to `/register` and `/login`. To limit who can register on a private installation, restrict network access to the app at the reverse proxy or VPN. Registration does not verify email ownership or offer self-service password recovery.
 
 ## 4. HTTPS reverse proxy
 
@@ -94,7 +96,7 @@ Reload Caddy after updating the Caddyfile. Keep ports 80 and 443 accessible only
 
 ### Nginx
 
-Configure Nginx as an HTTPS reverse proxy to `http://127.0.0.1:3000`, forwarding `Host`, `X-Forwarded-Proto`, and `X-Forwarded-For`. Obtain certificates using the organization's certificate process or Certbot. Do not expose PostgreSQL through Nginx.
+Configure Nginx as an HTTPS reverse proxy to `http://127.0.0.1:3000`, forwarding `Host` and `X-Forwarded-Proto`. Set `proxy_set_header X-Forwarded-For $remote_addr;` so authentication throttling uses the connecting address, not a client-supplied header. If there is another trusted load balancer in front, configure Nginx's real IP handling for that balancer first. Obtain certificates using the organization's certificate process or Certbot. Do not expose PostgreSQL through Nginx.
 
 After configuring HTTPS, sign in using the public `AUTH_URL`, then verify sign-out, Server Actions, and CSV downloads. Do not add a broad Server Actions `allowedOrigins` setting unless the deployment actually crosses origins.
 
