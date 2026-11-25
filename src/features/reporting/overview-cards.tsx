@@ -41,7 +41,7 @@ export function FinancialPosition({
           Financial overview
         </h2>
         <Link
-          href="/settings"
+          href="/settings#capital"
           className="inline-flex min-h-7 items-center gap-1 rounded-sm text-xs text-equity-muted hover:text-equity-foreground hover:underline focus-visible:outline-primary"
         >
           Manage capital <ArrowUpRight className="size-3.5" aria-hidden="true" />

@@ -127,4 +127,15 @@ test("separates realized results from current inventory across reports", async (
   const csv = await readFile(await download.path(), "utf8");
   expect(csv).toContain("Total Revenue (IDR),1100000,2025-06-01 to 2025-06-30");
   expect(csv).toContain("Estimated Unrealized Profit (IDR),150000,Current estimate");
+
+  await page.goto("/overview?range=custom&from=2025-06-01&to=2025-06-30");
+  await page.getByRole("link", { name: "View all sales" }).click();
+  await expect(page.getByRole("heading", { name: "Sold Accounts" })).toBeVisible();
+  const history = page.getByRole("region", { name: "Sold accounts and transaction details" });
+  await expect(history.getByRole("row", { name: /Previous sale/ })).toBeVisible();
+  const loss = history.getByRole("row", { name: /Loss sale/ });
+  await expect(loss).toContainText("Rp250.000");
+  await expect(loss).toContainText("Rp20.000");
+  await expect(loss).toContainText("-Rp170.000");
+  await expect(loss.getByRole("button", { name: "Account actions" })).toHaveCount(0);
 });

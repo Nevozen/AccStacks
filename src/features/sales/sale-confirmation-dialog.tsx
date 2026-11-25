@@ -177,7 +177,7 @@ export function SaleConfirmationDialog({
                 </div>
               </div>
               <div className="space-y-3 rounded-lg border p-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-sm font-medium">Additional expenses</p>
                     <p className="text-xs text-muted-foreground">
@@ -199,7 +199,10 @@ export function SaleConfirmationDialog({
                   <p className="text-xs text-muted-foreground">No additional expenses.</p>
                 ) : null}
                 {expenseFields.fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-[1fr_10rem_2rem] items-start gap-2">
+                  <div
+                    key={field.id}
+                    className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-start gap-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
+                  >
                     <div>
                       <Input
                         {...form.register(`expenses.${index}.name`)}
@@ -276,7 +279,7 @@ export function SaleConfirmationDialog({
                     type="checkbox"
                     checked={lossConfirmed}
                     onChange={(event) => setLossConfirmed(event.target.checked)}
-                    className="order-first mt-0.5"
+                    className="order-first mt-0.5 size-4 shrink-0 accent-destructive"
                   />
                   <span>
                     This transaction results in a loss of <Money value={-metrics.netProfit} />.

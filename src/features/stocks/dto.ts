@@ -23,7 +23,14 @@ export function toStockAccountDto(account: StockAccountRecord, timezone: string)
     }),
     activeListingCount: account._count.listings,
     sale: account.sale
-      ? { netProfit: account.sale.netProfit.toString(), soldAt: account.sale.soldAt.toISOString() }
+      ? {
+          marketplace: account.sale.marketplace,
+          purchasePrice: account.sale.purchasePrice.toString(),
+          sellingPrice: account.sale.sellingPrice.toString(),
+          totalExpenses: account.sale.totalExpenses.toString(),
+          netProfit: account.sale.netProfit.toString(),
+          soldAt: account.sale.soldAt.toISOString(),
+        }
       : null,
   };
 }

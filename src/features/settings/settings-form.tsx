@@ -8,8 +8,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { MoneyInput } from "@/components/shared/money-input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -43,6 +42,7 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
   const timezone = useWatch({ control: form.control, name: "timezone" });
   const stockView = useWatch({ control: form.control, name: "preferredStockView" });
   const pending = form.formState.isSubmitting;
+  const capitalError = form.formState.errors.capital?.message;
 
   async function onSubmit(values: SettingsInput) {
     const result = await updateSettingsAction(values);
@@ -56,17 +56,14 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <Card className="max-w-2xl">
+    <form className="min-w-0 space-y-grid" onSubmit={form.handleSubmit(onSubmit)}>
+      <Card>
         <CardHeader>
-          <CardTitle>Workspace preferences</CardTitle>
-          <CardDescription>
-            Control appearance, date reporting, and your default inventory layout.
-          </CardDescription>
+          <h2 className="text-[15px] font-semibold">Workspace preferences</h2>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="grid gap-grid sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label>Theme</Label>
+            <Label htmlFor="workspace-theme">Theme</Label>
             <Select
               value={theme}
               onValueChange={(value: SettingsInput["theme"]) => {
@@ -74,7 +71,7 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
                 setTheme(value.toLowerCase());
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger id="workspace-theme" disabled={pending}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -85,12 +82,16 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label>Timezone</Label>
+            <Label htmlFor="workspace-timezone">Timezone</Label>
             <Select
               value={timezone}
               onValueChange={(value) => form.setValue("timezone", value, { shouldDirty: true })}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id="workspace-timezone"
+                disabled={pending}
+                aria-describedby="timezone-help"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -101,45 +102,19 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              Used for date inputs, displays, reporting boundaries, and exports. Timestamps remain
-              UTC in PostgreSQL.
+            <p id="timezone-help" className="text-xs text-muted-foreground">
+              Used to display dates, set reporting boundaries, and format exports.
             </p>
           </div>
           <div className="space-y-1.5">
-            <Label>Owner capital</Label>
-            <Controller
-              control={form.control}
-              name="capital"
-              render={({ field }) => (
-                <MoneyInput
-                  value={field.value ?? "0"}
-                  onChange={field.onChange}
-                  disabled={pending}
-                />
-              )}
-            />
-            <p className="text-xs text-muted-foreground">
-              Owner funding used as the basis for estimated cash, assets, and equity. Inventory
-              remains a separate asset.
-            </p>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Currency</Label>
-            <Input value="IDR — Indonesian Rupiah" disabled />
-            <p className="text-xs text-muted-foreground">
-              All financial values are stored as whole Rupiah.
-            </p>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Preferred stock view</Label>
+            <Label htmlFor="workspace-stock-view">Preferred stock view</Label>
             <Select
               value={stockView}
               onValueChange={(value: SettingsInput["preferredStockView"]) =>
                 form.setValue("preferredStockView", value, { shouldDirty: true })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger id="workspace-stock-view" disabled={pending}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -148,12 +123,54 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsInput }
               </SelectContent>
             </Select>
           </div>
-          <Button type="submit" disabled={pending || !form.formState.isDirty}>
-            {pending ? <Loader2 className="animate-spin" /> : null}
-            Save preferences
-          </Button>
+          <dl>
+            <dt className="text-sm font-medium">Currency</dt>
+            <dd className="mt-1.5 rounded-md bg-muted px-3 py-2 text-sm">
+              IDR / Indonesian Rupiah
+            </dd>
+          </dl>
         </CardContent>
       </Card>
+      <Card id="capital" className="scroll-mt-18">
+        <CardHeader>
+          <h2 className="text-[15px] font-semibold">Capital</h2>
+          <p id="capital-help" className="text-sm text-muted-foreground">
+            Owner funding used to estimate equity and cash. Editing capital does not change recorded
+            sales.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-1.5">
+          <Label htmlFor="owner-capital">Owner capital (IDR)</Label>
+          <div className="max-w-64">
+            <Controller
+              control={form.control}
+              name="capital"
+              render={({ field }) => (
+                <MoneyInput
+                  id="owner-capital"
+                  ref={field.ref}
+                  value={field.value ?? "0"}
+                  onChange={field.onChange}
+                  disabled={pending}
+                  aria-invalid={Boolean(capitalError)}
+                  aria-describedby={capitalError ? "capital-help capital-error" : "capital-help"}
+                />
+              )}
+            />
+          </div>
+          {capitalError ? (
+            <p id="capital-error" role="alert" className="text-xs text-destructive">
+              {capitalError}
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
+      <div className="flex justify-end">
+        <Button type="submit" disabled={pending || !form.formState.isDirty}>
+          {pending ? <Loader2 className="motion-safe:animate-spin" aria-hidden="true" /> : null}
+          Save preferences
+        </Button>
+      </div>
     </form>
   );
 }

@@ -126,13 +126,12 @@ export function AccountFormDialog({
         <DialogHeader>
           <DialogTitle>{account ? "Edit account" : "Add account"}</DialogTitle>
           <DialogDescription>
-            Record business information only. Never store game passwords, recovery codes, or session
-            tokens.
+            Track purchase details only. Never store passwords, recovery codes, or session tokens.
           </DialogDescription>
         </DialogHeader>
         <form
           id="account-form"
-          className="grid gap-4 sm:grid-cols-2"
+          className="grid gap-grid sm:grid-cols-2"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <Field label="Game name" error={errors.gameName?.message} required>
@@ -154,6 +153,7 @@ export function AccountFormDialog({
               {...form.register("accountName")}
               placeholder="Mythical Glory Account"
               disabled={pending}
+              aria-invalid={Boolean(errors.accountName)}
             />
           </Field>
           <Field label="Purchase price" error={errors.purchasePrice?.message} required>
@@ -172,7 +172,12 @@ export function AccountFormDialog({
             />
           </Field>
           <Field label="Purchase date" error={errors.purchaseDate?.message} required>
-            <Input type="date" {...form.register("purchaseDate")} disabled={pending} />
+            <Input
+              type="date"
+              {...form.register("purchaseDate")}
+              disabled={pending}
+              aria-invalid={Boolean(errors.purchaseDate)}
+            />
           </Field>
           <Field label="Purchased from" error={errors.purchasedFrom?.message}>
             <Input
@@ -225,7 +230,7 @@ export function AccountFormDialog({
             Cancel
           </Button>
           <Button type="submit" form="account-form" disabled={pending}>
-            {pending ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
+            {pending ? <Loader2 className="motion-safe:animate-spin" aria-hidden="true" /> : null}
             {account ? "Save changes" : "Add account"}
           </Button>
         </DialogFooter>

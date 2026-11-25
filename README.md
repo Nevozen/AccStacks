@@ -54,7 +54,7 @@ Manage purchased game accounts throughout their entire lifecycle.
 - Search, filter, sort, and edit account records, with a default Available → Listed → Sold order and alphabetical names within each status.
 - View purchase information and associated marketplace listings.
 - Display sold accounts with a dimmed appearance and a clear `SOLD` badge.
-- Preserve sold account records and their transaction history.
+- Review immutable transaction snapshots in the Sold Accounts table and export completed sales.
 
 ### Listings
 

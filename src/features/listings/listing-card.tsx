@@ -24,22 +24,24 @@ export function ListingCard({
   onMarkSold: () => void;
 }) {
   return (
-    <Card className="flex flex-col p-4" data-testid="listing-card">
-      <div className="flex items-start gap-3">
+    <Card className="flex flex-col p-panel" data-testid="listing-card">
+      <div className="flex items-center gap-3">
         <AccountThumbnail src={listing.account.imageUrl} alt="" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="truncate text-xs text-muted-foreground">{listing.account.gameName}</p>
-              <h2 className="mt-0.5 truncate text-sm font-semibold">
+              <h2 className="truncate text-sm font-semibold" title={listing.account.accountName}>
                 {listing.account.accountName}
               </h2>
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {listing.account.gameName}
+              </p>
             </div>
-            <Badge variant="success">ACTIVE</Badge>
+            <Badge variant="success">Active</Badge>
           </div>
-          <div className="mt-2 flex items-center gap-1.5 text-xs font-medium">
-            <span>{listing.marketplace}</span>
-            <span className="font-mono text-[10px] text-muted-foreground">
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-xs font-medium">
+            <span className="wrap-anywhere">{listing.marketplace}</span>
+            <span className="font-mono text-[11px] wrap-anywhere text-muted-foreground">
               {listing.listingCode}
             </span>
             {listing.listingUrl ? (
@@ -47,7 +49,7 @@ export function ListingCard({
                 href={listing.listingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground"
+                className="grid size-6 place-items-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                 aria-label={`Open ${listing.marketplace} advertisement`}
               >
                 <ExternalLink className="size-3.5" />
@@ -56,57 +58,63 @@ export function ListingCard({
           </div>
         </div>
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+      <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
         <div>
-          <p className="text-muted-foreground">Purchase price</p>
-          <Money className="mt-1 block" value={BigInt(listing.account.purchasePrice)} />
-        </div>
-        <div>
-          <p className="text-muted-foreground">Listing price</p>
-          <Money className="mt-1 block" value={BigInt(listing.listingPrice)} />
+          <p className="text-muted-foreground">Asking price</p>
+          <Money
+            className="mt-0.5 block text-base font-semibold wrap-anywhere"
+            value={BigInt(listing.listingPrice)}
+          />
         </div>
         <div>
           <p className="text-muted-foreground">Estimated profit</p>
-          <Money className="mt-1 block" value={BigInt(listing.estimatedProfit)} colored />
+          <Money
+            className="mt-0.5 block text-base font-semibold wrap-anywhere"
+            value={BigInt(listing.estimatedProfit)}
+            colored
+          />
+        </div>
+        <div>
+          <p className="text-muted-foreground">Purchase price</p>
+          <Money
+            className="mt-0.5 block wrap-anywhere"
+            value={BigInt(listing.account.purchasePrice)}
+          />
         </div>
         <div>
           <p className="text-muted-foreground">Estimated margin</p>
-          <p className="mt-1 font-medium">{formatPercentage(listing.estimatedProfitMargin)}</p>
+          <p className="mt-0.5 font-medium tabular-nums">
+            {formatPercentage(listing.estimatedProfitMargin)}
+          </p>
         </div>
       </div>
-      <div className="mt-4 flex items-center justify-between border-t pt-3 text-[11px] text-muted-foreground">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <CalendarDays className="size-3.5" />
+          <CalendarDays className="size-3.5" aria-hidden="true" />
           {formatDate(new Date(listing.listedAt), timezone)}
         </span>
         <span>
           {listing.daysListed} day{listing.daysListed === 1 ? "" : "s"} listed
         </span>
       </div>
-      <div className="mt-3 border-t pt-3">
-        <span className="text-[11px] text-muted-foreground">
-          {listing.account.activeListingCount} listing
-          {listing.account.activeListingCount === 1 ? "" : "s"} on this account
-        </span>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button size="sm" onClick={onMarkSold}>
-            <CircleDollarSign />
-            Mark as Sold
-          </Button>
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            <Pencil />
-            Edit
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:text-destructive"
-            onClick={onDelete}
-          >
-            <Trash2 />
-            Delete
-          </Button>
-        </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <Button size="sm" onClick={onMarkSold}>
+          <CircleDollarSign />
+          Mark as Sold
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onEdit}>
+          <Pencil />
+          Edit
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:text-destructive"
+          onClick={onDelete}
+        >
+          <Trash2 />
+          Delete
+        </Button>
       </div>
     </Card>
   );

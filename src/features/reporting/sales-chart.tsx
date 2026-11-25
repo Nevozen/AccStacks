@@ -16,7 +16,7 @@ import type { SalesChartPoint } from "./sales-chart-data";
 export function SalesChart({ points }: { points: SalesChartPoint[] }) {
   const ticks = { fill: "var(--muted-foreground)", fontSize: 11 };
   return (
-    <div className="h-56 min-w-0 sm:h-[236px]">
+    <div className="h-56 min-w-0 overflow-clip sm:h-[236px] [&_.recharts-surface]:focus-visible:-outline-offset-2">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           title="Revenue and net profit over time in Indonesian Rupiah"

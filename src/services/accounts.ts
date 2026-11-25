@@ -13,7 +13,17 @@ import { normalizeCategory, normalizeName } from "@/lib/normalization";
 import { db } from "@/server/db";
 
 const stockAccountInclude = {
-  sale: { select: { id: true, netProfit: true, soldAt: true } },
+  sale: {
+    select: {
+      id: true,
+      marketplace: true,
+      purchasePrice: true,
+      sellingPrice: true,
+      totalExpenses: true,
+      netProfit: true,
+      soldAt: true,
+    },
+  },
   _count: { select: { listings: { where: { status: "ACTIVE" as const } } } },
 } satisfies Prisma.AccountInclude;
 

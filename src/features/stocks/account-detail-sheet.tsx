@@ -25,20 +25,18 @@ export function AccountDetailSheet({
 }) {
   return (
     <Sheet open={Boolean(account)} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="gap-5 sm:max-w-xl">
+      <SheetContent className="gap-grid sm:max-w-xl">
         {account ? (
           <>
             <div className="pr-8">
               <SheetTitle>Account details</SheetTitle>
-              <SheetDescription>
-                Inventory, listing, and financial history for this account.
-              </SheetDescription>
+              <SheetDescription>Purchase details, listings, and recorded sales.</SheetDescription>
             </div>
             <div className="flex items-start gap-3">
               <AccountThumbnail src={account.imageUrl} alt="" className="size-16" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-muted-foreground">{account.gameName}</p>
-                <h2 className="mt-1 font-semibold">{account.accountName}</h2>
+                <h2 className="mt-1 font-semibold wrap-anywhere">{account.accountName}</h2>
                 <p className="mt-1 font-mono text-xs font-medium text-muted-foreground">
                   {account.accountCode}
                 </p>
@@ -169,7 +167,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
         {title}
       </h3>
-      <div className="space-y-2.5 rounded-lg border p-3">{children}</div>
+      <div className="space-y-2.5 rounded-lg border bg-card p-3">{children}</div>
     </section>
   );
 }
@@ -186,7 +184,7 @@ function Row({
   return (
     <div className="flex items-start justify-between gap-4 text-xs">
       <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium">{children ?? value}</span>
+      <span className="min-w-0 text-right font-medium wrap-anywhere">{children ?? value}</span>
     </div>
   );
 }
@@ -195,7 +193,7 @@ function TextBlock({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="text-xs">
       <p className="mb-1 text-muted-foreground">{label}</p>
-      <p className="whitespace-pre-wrap">{value || "Not recorded"}</p>
+      <p className="wrap-anywhere whitespace-pre-wrap">{value || "Not recorded"}</p>
     </div>
   );
 }

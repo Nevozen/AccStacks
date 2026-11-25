@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { Eye, Pencil, Store, Trash2 } from "lucide-react";
+import { AccountThumbnail } from "@/components/shared/account-thumbnail";
 import { Money } from "@/components/shared/money";
 import { AccountStatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,95 +12,110 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/dates";
-import { cn } from "@/lib/utils";
+import { AccountActions } from "./account-actions";
 import type { StockAccountDto } from "./types";
 
 export function AccountTable({
   accounts,
   timezone,
+  showSales,
   onView,
   onEdit,
   onDelete,
 }: {
   accounts: StockAccountDto[];
   timezone: string;
+  showSales: boolean;
   onView: (account: StockAccountDto) => void;
   onEdit: (account: StockAccountDto) => void;
   onDelete: (account: StockAccountDto) => void;
 }) {
   return (
-    <div className="rounded-xl border bg-card">
-      <Table>
+    <div className="rounded-xl border bg-card p-1">
+      <Table scrollLabel={showSales ? "Sold accounts and transaction details" : "Stock accounts"}>
         <TableHeader>
           <TableRow>
-            <TableHead>Account ID</TableHead>
-            <TableHead>Account</TableHead>
-            <TableHead>Game</TableHead>
-            <TableHead className="text-right">Purchase price</TableHead>
-            <TableHead>Purchase date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Listings</TableHead>
+            <TableHead scope="col">Account</TableHead>
+            <TableHead scope="col">{showSales ? "Marketplace" : "Status"}</TableHead>
+            <TableHead scope="col" className="text-right">
+              {showSales ? "Purchase cost" : "Purchase price"}
+            </TableHead>
+            {showSales ? (
+              <>
+                <TableHead scope="col" className="text-right">
+                  Selling price
+                </TableHead>
+                <TableHead scope="col" className="text-right">
+                  Expenses
+                </TableHead>
+                <TableHead scope="col" className="text-right">
+                  Net profit
+                </TableHead>
+              </>
+            ) : (
+              <TableHead scope="col" className="text-right">
+                Active listings
+              </TableHead>
+            )}
+            <TableHead scope="col">{showSales ? "Sale date" : "Purchase date"}</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {accounts.map((account) => {
-            const sold = account.status === "SOLD";
+            const sale = account.sale;
             return (
-              <TableRow
-                key={account.id}
-                className={cn(sold && "bg-muted/40 text-muted-foreground")}
-              >
-                <TableCell className="font-mono text-xs" title={`Internal ID: ${account.id}`}>
-                  {account.accountCode}
-                </TableCell>
-                <TableCell className="max-w-48 truncate font-medium">
-                  {account.accountName}
-                </TableCell>
-                <TableCell>{account.gameName}</TableCell>
-                <TableCell className="text-right">
-                  <Money value={BigInt(account.purchasePrice)} />
-                </TableCell>
-                <TableCell className="whitespace-nowrap">
-                  {formatDate(new Date(account.purchaseDate), timezone)}
-                </TableCell>
-                <TableCell>
-                  <AccountStatusBadge status={account.status} />
-                </TableCell>
-                <TableCell>{account.activeListingCount}</TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="icon-sm" onClick={() => onView(account)}>
-                      <Eye />
-                      <span className="sr-only">View {account.accountName}</span>
-                    </Button>
-                    {!sold ? (
-                      <Button variant="ghost" size="icon-sm" asChild>
-                        <Link href={`/listings?create=1&account=${account.id}`}>
-                          <Store />
-                          <span className="sr-only">Create listing for {account.accountName}</span>
-                        </Link>
-                      </Button>
-                    ) : null}
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      disabled={sold}
-                      onClick={() => onEdit(account)}
-                    >
-                      <Pencil />
-                      <span className="sr-only">Edit {account.accountName}</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      disabled={sold || account.activeListingCount > 0}
-                      onClick={() => onDelete(account)}
-                    >
-                      <Trash2 />
-                      <span className="sr-only">Delete {account.accountName}</span>
-                    </Button>
+              <TableRow key={account.id}>
+                <TableCell className="min-w-40">
+                  <div className="flex items-center gap-2.5">
+                    <AccountThumbnail src={account.imageUrl} alt="" className="size-8" />
+                    <div className="max-w-52">
+                      <p className="font-semibold wrap-anywhere">{account.accountName}</p>
+                      <p className="text-xs wrap-anywhere text-muted-foreground">
+                        {account.gameName}{" "}
+                        <span className="font-mono text-[11px]">{account.accountCode}</span>
+                      </p>
+                    </div>
                   </div>
+                </TableCell>
+                <TableCell className="max-w-40 wrap-anywhere">
+                  {showSales ? sale?.marketplace : <AccountStatusBadge status={account.status} />}
+                </TableCell>
+                <TableCell className="text-right whitespace-nowrap">
+                  <Money
+                    value={BigInt(showSales && sale ? sale.purchasePrice : account.purchasePrice)}
+                  />
+                </TableCell>
+                {showSales ? (
+                  <>
+                    <TableCell className="text-right whitespace-nowrap">
+                      {sale && <Money value={BigInt(sale.sellingPrice)} />}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      {sale && <Money value={BigInt(sale.totalExpenses)} />}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      {sale && <Money value={BigInt(sale.netProfit)} colored />}
+                    </TableCell>
+                  </>
+                ) : (
+                  <TableCell className="text-right tabular-nums">
+                    {account.activeListingCount}
+                  </TableCell>
+                )}
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(
+                    new Date(showSales && sale ? sale.soldAt : account.purchaseDate),
+                    timezone,
+                  )}
+                </TableCell>
+                <TableCell>
+                  <AccountActions
+                    account={account}
+                    onView={() => onView(account)}
+                    onEdit={() => onEdit(account)}
+                    onDelete={() => onDelete(account)}
+                  />
                 </TableCell>
               </TableRow>
             );

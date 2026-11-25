@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Download, Plus, Search, Store } from "lucide-react";
+import { Download, Plus, Store } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/shared/empty-state";
+import { CollectionPagination, CollectionSearch } from "@/components/shared/collection-controls";
 import { PageHeader } from "@/components/shared/page-header";
 import {
   AlertDialog,
@@ -17,7 +19,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -123,10 +124,10 @@ export function ListingsWorkspace({
   const hasFilters = Boolean(query.q || query.game || query.marketplace);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-grid">
       <PageHeader
         title="Listings"
-        description={`${totalActiveListings} active listing${totalActiveListings === 1 ? "" : "s"} across ${uniqueListedAccounts} account${uniqueListedAccounts === 1 ? "" : "s"}.`}
+        description={`${totalActiveListings} active ${totalActiveListings === 1 ? "listing" : "listings"} across ${uniqueListedAccounts} ${uniqueListedAccounts === 1 ? "account" : "accounts"}`}
         actions={
           <>
             <Button asChild variant="outline">
@@ -142,30 +143,19 @@ export function ListingsWorkspace({
           </>
         }
       />
-      <div className="flex flex-col gap-2 xl:flex-row">
-        <form
-          className="relative min-w-0 flex-1"
-          onSubmit={(event) => {
-            event.preventDefault();
-            updateParams({ q: String(new FormData(event.currentTarget).get("q") ?? "").trim() });
-          }}
-        >
-          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            key={query.q}
-            name="q"
-            defaultValue={query.q}
-            className="pl-9"
-            placeholder="Search account, game, ID, or marketplace"
-            aria-label="Search listings"
-          />
-        </form>
+      <div className="flex flex-col gap-2 rounded-xl border bg-card p-3 xl:flex-row">
+        <CollectionSearch
+          value={query.q}
+          label="Search listings"
+          placeholder="Find by account, marketplace, or ID"
+          onSearch={(q) => updateParams({ q })}
+        />
         <div className="grid grid-cols-2 gap-2 sm:flex">
           <Select
             value={query.game || "all"}
             onValueChange={(game) => updateParams({ game: game === "all" ? null : game })}
           >
-            <SelectTrigger className="sm:w-36">
+            <SelectTrigger className="sm:w-36" aria-label="Filter listings by game">
               <SelectValue placeholder="All games" />
             </SelectTrigger>
             <SelectContent>
@@ -183,7 +173,7 @@ export function ListingsWorkspace({
               updateParams({ marketplace: marketplace === "all" ? null : marketplace })
             }
           >
-            <SelectTrigger className="sm:w-36">
+            <SelectTrigger className="sm:w-44" aria-label="Filter listings by marketplace">
               <SelectValue placeholder="All marketplaces" />
             </SelectTrigger>
             <SelectContent>
@@ -199,7 +189,7 @@ export function ListingsWorkspace({
             value={query.sort}
             onValueChange={(sort) => updateParams({ sort: sort === "newest" ? null : sort })}
           >
-            <SelectTrigger className="sm:w-44">
+            <SelectTrigger className="col-span-2 sm:w-44" aria-label="Sort listings">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -215,105 +205,98 @@ export function ListingsWorkspace({
         </div>
       </div>
 
-      {listings.length === 0 ? (
-        <EmptyState
-          icon={Store}
-          title={hasFilters ? "No matching listings" : "No active listings"}
-          description={
-            hasFilters
-              ? "Adjust or clear the current search and filters."
-              : "Create a marketplace listing from an unsold Stock account."
-          }
-          action={
-            hasFilters ? (
-              <Button
-                variant="outline"
-                onClick={() => startTransition(() => router.replace(pathname))}
-              >
-                Clear filters
-              </Button>
-            ) : (
-              <Button onClick={openCreate}>
-                <Plus />
-                Create New Listing
-              </Button>
-            )
-          }
-        />
-      ) : (
-        <div
-          className={cn("grid gap-3 md:grid-cols-2 2xl:grid-cols-3", navigating && "opacity-70")}
-          data-testid="listings-grid"
-        >
-          {orderedGroups.map((group) =>
-            expandedAccountId === group.account.id ? (
-              <ListingGroupExpansion
-                key={group.account.id}
-                group={group}
-                timezone={timezone}
-                onClose={() => setExpandedAccountId(null)}
-                onEdit={(listing) => {
-                  setExpandedAccountId(null);
-                  setEditing(listing);
-                  setFormOpen(true);
-                }}
-                onDelete={(listing) => {
-                  setExpandedAccountId(null);
-                  setDeleting(listing);
-                }}
-                onMarkSold={(listing) => {
-                  setExpandedAccountId(null);
-                  setSelling(listing);
-                }}
-              />
-            ) : group.listings.length === 1 ? (
-              <ListingCard
-                key={group.account.id}
-                listing={group.listings[0]!}
-                timezone={timezone}
-                onEdit={() => {
-                  setEditing(group.listings[0]!);
-                  setFormOpen(true);
-                }}
-                onDelete={() => setDeleting(group.listings[0]!)}
-                onMarkSold={() => setSelling(group.listings[0]!)}
-              />
-            ) : (
-              <ListingGroupCard
-                key={group.account.id}
-                group={group}
-                onShowAll={() => setExpandedAccountId(group.account.id)}
-              />
-            ),
-          )}
-        </div>
-      )}
-
-      {totalFiltered > 0 ? (
-        <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            {totalFiltered} result{totalFiltered === 1 ? "" : "s"} · Page {page} of {totalPages}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1 || navigating}
-              onClick={() => updateParams({ page: String(page - 1) }, false)}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages || navigating}
-              onClick={() => updateParams({ page: String(page + 1) }, false)}
-            >
-              Next
-            </Button>
+      <div className="space-y-grid" aria-busy={navigating}>
+        {listings.length === 0 ? (
+          <EmptyState
+            icon={Store}
+            title={hasFilters ? "No matching listings" : "No active listings"}
+            description={
+              hasFilters
+                ? "Adjust or clear the current search and filters."
+                : "Create a marketplace listing from an unsold Stock account."
+            }
+            action={
+              hasFilters ? (
+                <Button
+                  variant="outline"
+                  onClick={() => updateParams({ q: null, game: null, marketplace: null })}
+                >
+                  Clear filters
+                </Button>
+              ) : eligibleAccounts.length === 0 ? (
+                <Button asChild variant="outline">
+                  <Link href="/stocks?add=1">
+                    <Plus /> Add Account
+                  </Link>
+                </Button>
+              ) : (
+                <Button onClick={openCreate}>
+                  <Plus />
+                  Create New Listing
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <div
+            className={cn(
+              "grid items-start gap-grid md:grid-cols-2 2xl:grid-cols-3",
+              navigating && "opacity-70",
+            )}
+            data-testid="listings-grid"
+          >
+            {orderedGroups.map((group) =>
+              expandedAccountId === group.account.id ? (
+                <ListingGroupExpansion
+                  key={group.account.id}
+                  group={group}
+                  timezone={timezone}
+                  onClose={() => setExpandedAccountId(null)}
+                  onEdit={(listing) => {
+                    setExpandedAccountId(null);
+                    setEditing(listing);
+                    setFormOpen(true);
+                  }}
+                  onDelete={(listing) => {
+                    setExpandedAccountId(null);
+                    setDeleting(listing);
+                  }}
+                  onMarkSold={(listing) => {
+                    setExpandedAccountId(null);
+                    setSelling(listing);
+                  }}
+                />
+              ) : group.listings.length === 1 ? (
+                <ListingCard
+                  key={group.account.id}
+                  listing={group.listings[0]!}
+                  timezone={timezone}
+                  onEdit={() => {
+                    setEditing(group.listings[0]!);
+                    setFormOpen(true);
+                  }}
+                  onDelete={() => setDeleting(group.listings[0]!)}
+                  onMarkSold={() => setSelling(group.listings[0]!)}
+                />
+              ) : (
+                <ListingGroupCard
+                  key={group.account.id}
+                  group={group}
+                  onShowAll={() => setExpandedAccountId(group.account.id)}
+                />
+              ),
+            )}
           </div>
-        </div>
-      ) : null}
+        )}
+
+        <CollectionPagination
+          page={page}
+          totalPages={totalPages}
+          count={totalFiltered}
+          pending={navigating}
+          onPageChange={(next) => updateParams({ page: String(next) }, false)}
+        />
+      </div>
 
       <ListingFormDialog
         listing={editing}

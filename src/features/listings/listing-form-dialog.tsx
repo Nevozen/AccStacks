@@ -184,12 +184,12 @@ export function ListingFormDialog({
         <DialogHeader>
           <DialogTitle>{listing ? "Edit listing" : "Create new listing"}</DialogTitle>
           <DialogDescription>
-            Track an external marketplace advertisement without duplicating the underlying account.
+            Track the asking price and link for an external advertisement.
           </DialogDescription>
         </DialogHeader>
         <form
           id="listing-form"
-          className="grid gap-4 sm:grid-cols-2"
+          className="grid gap-grid sm:grid-cols-2"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           {!listing ? (
@@ -255,13 +255,15 @@ export function ListingFormDialog({
                 </PopoverContent>
               </Popover>
               {errors.accountId ? (
-                <p className="text-xs text-destructive">{errors.accountId.message}</p>
+                <p role="alert" className="text-xs text-destructive">
+                  {errors.accountId.message}
+                </p>
               ) : null}
             </div>
           ) : null}
 
           {selectedAccount ? (
-            <div className="rounded-lg border bg-muted/30 p-3 sm:col-span-2">
+            <div className="rounded-lg bg-muted/65 p-3 sm:col-span-2">
               <div className="flex items-start gap-3">
                 <AccountThumbnail src={selectedAccount.imageUrl} alt="" />
                 <div className="min-w-0 flex-1">

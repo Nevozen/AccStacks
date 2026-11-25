@@ -1,20 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { CalendarDays, Eye, MoreHorizontal, Pencil, Store, Trash2 } from "lucide-react";
 import { AccountThumbnail } from "@/components/shared/account-thumbnail";
 import { Money } from "@/components/shared/money";
 import { AccountStatusBadge } from "@/components/shared/status-badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/dates";
 import { cn } from "@/lib/utils";
+import { AccountActions } from "./account-actions";
 import type { StockAccountDto } from "./types";
 
 export function AccountCard({
@@ -30,97 +22,52 @@ export function AccountCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const sold = account.status === "SOLD";
+  const sale = account.sale;
   return (
-    <Card
-      className={cn("relative overflow-hidden p-4", sold && "bg-muted/60")}
-      data-testid="account-card"
-    >
-      {sold ? (
-        <span
-          className="pointer-events-none absolute right-3 bottom-1 text-6xl font-bold tracking-tight text-foreground/5"
-          aria-hidden="true"
-        >
-          SOLD
-        </span>
-      ) : null}
-      <div className="relative flex items-start gap-3">
-        <AccountThumbnail src={account.imageUrl} alt="" className={cn(sold && "grayscale")} />
+    <Card className={cn("flex flex-col p-panel", sale && "bg-muted/45")} data-testid="account-card">
+      <div className="flex items-center gap-3">
+        <AccountThumbnail src={account.imageUrl} alt="" className={cn(sale && "grayscale")} />
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate text-xs text-muted-foreground">{account.gameName}</p>
-              <h2 className="mt-0.5 truncate text-sm font-semibold">{account.accountName}</h2>
-            </div>
-            <AccountStatusBadge status={account.status} />
-          </div>
-          <p className="mt-2 line-clamp-2 min-h-8 text-xs text-muted-foreground">
-            {account.description || "No account description."}
+          <h2 className="truncate text-sm font-semibold" title={account.accountName}>
+            {account.accountName}
+          </h2>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">{account.gameName}</p>
+        </div>
+        <AccountStatusBadge status={account.status} />
+      </div>
+      {account.description ? (
+        <p className="mt-2 line-clamp-1 text-xs text-muted-foreground">{account.description}</p>
+      ) : null}
+      <dl className="mt-auto grid grid-cols-2 gap-2 pt-3 text-xs">
+        <div>
+          <dt className="text-muted-foreground">Purchase price</dt>
+          <dd className="mt-0.5 wrap-anywhere">
+            <Money
+              value={BigInt(sale?.purchasePrice ?? account.purchasePrice)}
+              className="font-semibold"
+            />
+          </dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">{sale ? "Net profit" : "Active listings"}</dt>
+          <dd className="mt-0.5 font-semibold tabular-nums wrap-anywhere">
+            {sale ? (
+              <Money value={BigInt(sale.netProfit)} colored className="font-semibold" />
+            ) : (
+              account.activeListingCount
+            )}
+          </dd>
+        </div>
+      </dl>
+      <div className="mt-3 flex items-center justify-between gap-2 border-t pt-2">
+        <div className="min-w-0 text-xs text-muted-foreground">
+          <p className="font-mono text-[11px] wrap-anywhere">{account.accountCode}</p>
+          <p>
+            {sale ? "Sold" : "Bought"}{" "}
+            {formatDate(new Date(sale?.soldAt ?? account.purchaseDate), timezone)}
           </p>
         </div>
-      </div>
-      <div className="relative mt-4 space-y-2 text-xs">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Purchase price</span>
-          <Money value={BigInt(account.purchasePrice)} />
-        </div>
-        <div className="flex items-center justify-between gap-2 text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <CalendarDays className="size-3.5" />
-            {formatDate(new Date(account.purchaseDate), timezone)}
-          </span>
-          <span>
-            {account.activeListingCount} active listing{account.activeListingCount === 1 ? "" : "s"}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-2 border-t pt-2">
-          <span
-            className="font-mono text-[10px] text-muted-foreground"
-            title={`Internal ID: ${account.id}`}
-          >
-            {account.accountCode}
-          </span>
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={onView}>
-              <Eye />
-              View
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon-sm">
-                  <MoreHorizontal />
-                  <span className="sr-only">Account actions</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={onView}>
-                  <Eye />
-                  View details
-                </DropdownMenuItem>
-                {!sold ? (
-                  <DropdownMenuItem asChild>
-                    <Link href={`/listings?create=1&account=${account.id}`}>
-                      <Store />
-                      Create listing
-                    </Link>
-                  </DropdownMenuItem>
-                ) : null}
-                <DropdownMenuItem disabled={sold} onSelect={onEdit}>
-                  <Pencil />
-                  Edit account
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={sold || account.activeListingCount > 0}
-                  onSelect={onDelete}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 />
-                  Delete account
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        <AccountActions account={account} onView={onView} onEdit={onEdit} onDelete={onDelete} />
       </div>
     </Card>
   );

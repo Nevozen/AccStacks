@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Download, Grid2X2, List, PackageOpen, Plus, Search } from "lucide-react";
+import { Download, Grid2X2, List, PackageOpen, Plus, ReceiptText } from "lucide-react";
 import { toast } from "sonner";
+import { CollectionPagination, CollectionSearch } from "@/components/shared/collection-controls";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import {
@@ -17,7 +19,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -25,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { archiveAccountAction, setStockViewAction } from "./actions";
 import { AccountCard } from "./account-card";
@@ -111,19 +111,28 @@ export function StocksWorkspace({
     router.refresh();
   }
 
-  const hasFilters = Boolean(query.q || query.game || query.category !== "all");
+  const hasFilters = Boolean(query.q || query.game);
+  const isSold = query.category === "sold";
+
+  function setView(view: "grid" | "table") {
+    if (view === query.view) return;
+    updateParams({ view }, false);
+    void setStockViewAction(view === "grid" ? "GRID" : "TABLE").catch(() =>
+      toast.error("Unable to save view preference"),
+    );
+  }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-grid">
       <PageHeader
-        title="Stocks"
-        description={`${totalAccounts} account${totalAccounts === 1 ? "" : "s"} across your inventory.`}
+        title={isSold ? "Sold Accounts" : "Stocks"}
+        description={isSold ? "Completed sales and their original transaction records." : undefined}
         actions={
           <>
             <Button asChild variant="outline">
-              <a href="/api/export/accounts" download>
+              <a href={isSold ? "/api/export/sales" : "/api/export/accounts"} download>
                 <Download />
-                Export CSV
+                {isSold ? "Export Sales" : "Export CSV"}
               </a>
             </Button>
             <Button onClick={openCreate}>
@@ -133,31 +142,48 @@ export function StocksWorkspace({
           </>
         }
       />
-      <div className="space-y-3">
-        <div className="flex flex-col gap-2 xl:flex-row">
-          <form
-            className="relative min-w-0 flex-1"
-            onSubmit={(event) => {
-              event.preventDefault();
-              updateParams({ q: String(new FormData(event.currentTarget).get("q") ?? "").trim() });
-            }}
-          >
-            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              key={query.q}
-              name="q"
-              defaultValue={query.q}
-              className="pl-9"
-              placeholder="Search account, game, or account ID"
-              aria-label="Search accounts"
-            />
-          </form>
+      <div className="rounded-xl border bg-card">
+        <div
+          role="group"
+          aria-label="Account status"
+          className="grid grid-cols-2 gap-1 border-b p-2 sm:flex sm:flex-wrap"
+        >
+          {categories.map((category) => (
+            <Button
+              key={category}
+              variant="ghost"
+              size="sm"
+              aria-pressed={query.category === category}
+              className={cn(
+                "justify-between capitalize sm:justify-center",
+                query.category === category && "bg-accent text-accent-foreground",
+              )}
+              onClick={() => updateParams({ category: category === "all" ? null : category })}
+            >
+              {category === "all"
+                ? "All Accounts"
+                : category === "sold"
+                  ? "Sold Accounts"
+                  : category}
+              <span className="rounded bg-card px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+                {counts[category]}
+              </span>
+            </Button>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2 p-3 xl:flex-row">
+          <CollectionSearch
+            value={query.q}
+            label="Search stocks"
+            placeholder="Find by account, game, or ID"
+            onSearch={(q) => updateParams({ q })}
+          />
           <div className="grid grid-cols-2 gap-2 sm:flex">
             <Select
               value={query.game || "all"}
               onValueChange={(game) => updateParams({ game: game === "all" ? null : game })}
             >
-              <SelectTrigger className="sm:w-40">
+              <SelectTrigger className="sm:w-40" aria-label="Filter stocks by game">
                 <SelectValue placeholder="All games" />
               </SelectTrigger>
               <SelectContent>
@@ -173,7 +199,7 @@ export function StocksWorkspace({
               value={query.sort}
               onValueChange={(sort) => updateParams({ sort: sort === "statusName" ? null : sort })}
             >
-              <SelectTrigger className="sm:w-44">
+              <SelectTrigger className="sm:w-44" aria-label="Sort stocks">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -189,139 +215,113 @@ export function StocksWorkspace({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex rounded-lg border bg-card p-1">
+          <div
+            role="group"
+            aria-label="Stock view"
+            className="flex w-fit gap-0.5 rounded-md bg-muted p-0.5"
+          >
             <Button
-              variant={query.view === "grid" ? "secondary" : "ghost"}
-              size="icon-sm"
-              onClick={() => {
-                updateParams({ view: query.view === "grid" ? null : "grid" });
-                void setStockViewAction("GRID").catch(() =>
-                  toast.error("Unable to save view preference"),
-                );
-              }}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                query.view === "grid" && "bg-card text-accent-foreground shadow-surface",
+              )}
+              aria-pressed={query.view === "grid"}
+              onClick={() => setView("grid")}
             >
               <Grid2X2 />
               <span className="sr-only">Grid view</span>
             </Button>
             <Button
-              variant={query.view === "table" ? "secondary" : "ghost"}
-              size="icon-sm"
-              onClick={() => {
-                updateParams({ view: "table" });
-                void setStockViewAction("TABLE").catch(() =>
-                  toast.error("Unable to save view preference"),
-                );
-              }}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                query.view === "table" && "bg-card text-accent-foreground shadow-surface",
+              )}
+              aria-pressed={query.view === "table"}
+              onClick={() => setView("table")}
             >
               <List />
               <span className="sr-only">Table view</span>
             </Button>
           </div>
         </div>
-        <Tabs
-          value={query.category}
-          onValueChange={(category) =>
-            updateParams({ category: category === "all" ? null : category })
-          }
-        >
-          <TabsList className="h-auto w-full justify-start overflow-x-auto sm:w-auto">
-            {categories.map((category) => (
-              <TabsTrigger key={category} value={category} className="capitalize">
-                {category === "all"
-                  ? "All Accounts"
-                  : category === "sold"
-                    ? "Sold Accounts"
-                    : category}
-                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] tabular-nums">
-                  {counts[category]}
-                </span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
       </div>
 
-      {accounts.length === 0 ? (
-        <EmptyState
-          icon={PackageOpen}
-          title={
-            hasFilters
-              ? "No matching accounts"
-              : totalAccounts === 0
-                ? "Add your first account"
-                : "No accounts in this category"
-          }
-          description={
-            hasFilters
-              ? "Adjust or clear the current search and filters."
-              : "Purchased game accounts will appear here with their current status."
-          }
-          action={
-            hasFilters ? (
-              <Button
-                variant="outline"
-                onClick={() => startTransition(() => router.replace(pathname))}
-              >
-                Clear filters
-              </Button>
-            ) : (
-              <Button onClick={openCreate}>
-                <Plus />
-                Add Account
-              </Button>
-            )
-          }
-        />
-      ) : query.view === "table" ? (
-        <AccountTable
-          accounts={accounts}
-          timezone={timezone}
-          onView={(account) => updateParams({ account: account.id }, false)}
-          onEdit={openEdit}
-          onDelete={setDeleting}
-        />
-      ) : (
-        <div
-          className={cn("grid gap-3 md:grid-cols-2 2xl:grid-cols-3", navigating && "opacity-70")}
-        >
-          {accounts.map((account) => (
-            <AccountCard
-              key={account.id}
-              account={account}
-              timezone={timezone}
-              onView={() => updateParams({ account: account.id }, false)}
-              onEdit={() => openEdit(account)}
-              onDelete={() => setDeleting(account)}
-            />
-          ))}
-        </div>
-      )}
-
-      {totalFiltered > 0 ? (
-        <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            {totalFiltered} result{totalFiltered === 1 ? "" : "s"} · Page {page} of {totalPages}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1 || navigating}
-              onClick={() => updateParams({ page: String(page - 1) }, false)}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages || navigating}
-              onClick={() => updateParams({ page: String(page + 1) }, false)}
-            >
-              Next
-            </Button>
+      <div className="space-y-grid" aria-busy={navigating}>
+        {accounts.length === 0 ? (
+          <EmptyState
+            icon={isSold ? ReceiptText : PackageOpen}
+            title={
+              hasFilters
+                ? "No matching accounts"
+                : isSold
+                  ? "No sold accounts"
+                  : totalAccounts === 0
+                    ? "Add your first account"
+                    : "No accounts in this category"
+            }
+            description={
+              hasFilters
+                ? "Adjust or clear the current search and filters."
+                : isSold
+                  ? "Accounts appear here once you record a completed sale."
+                  : "Track purchase cost and marketplace listings for each account."
+            }
+            action={
+              hasFilters ? (
+                <Button variant="outline" onClick={() => updateParams({ q: null, game: null })}>
+                  Clear filters
+                </Button>
+              ) : isSold ? (
+                <Button asChild variant="outline">
+                  <Link href="/listings">Go to Listings</Link>
+                </Button>
+              ) : (
+                <Button onClick={openCreate}>
+                  <Plus />
+                  Add Account
+                </Button>
+              )
+            }
+          />
+        ) : query.view === "table" ? (
+          <AccountTable
+            accounts={accounts}
+            timezone={timezone}
+            showSales={isSold}
+            onView={(account) => updateParams({ account: account.id }, false)}
+            onEdit={openEdit}
+            onDelete={setDeleting}
+          />
+        ) : (
+          <div
+            className={cn(
+              "grid gap-grid sm:grid-cols-2 xl:grid-cols-3",
+              navigating && "opacity-70",
+            )}
+          >
+            {accounts.map((account) => (
+              <AccountCard
+                key={account.id}
+                account={account}
+                timezone={timezone}
+                onView={() => updateParams({ account: account.id }, false)}
+                onEdit={() => openEdit(account)}
+                onDelete={() => setDeleting(account)}
+              />
+            ))}
           </div>
-        </div>
-      ) : null}
+        )}
+
+        <CollectionPagination
+          page={page}
+          totalPages={totalPages}
+          count={totalFiltered}
+          pending={navigating}
+          onPageChange={(next) => updateParams({ page: String(next) }, false)}
+        />
+      </div>
 
       <AccountFormDialog
         key={editing?.id ?? "new-account"}

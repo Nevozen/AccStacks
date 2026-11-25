@@ -58,8 +58,8 @@ export function ListingGroupExpansion({
       aria-label={`Listings for ${group.account.accountName}`}
       data-testid="listing-group-expansion"
     >
-      <div className="mb-3 flex items-start justify-between gap-3 rounded-lg border bg-card p-3">
-        <div>
+      <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border bg-card px-panel py-3">
+        <div className="min-w-0 wrap-anywhere">
           <h2 className="text-sm font-semibold">{group.account.accountName}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {group.account.accountCode} · {group.account.gameName} · {group.listings.length} active

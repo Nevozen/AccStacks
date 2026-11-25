@@ -15,7 +15,14 @@ export type StockAccountDto = {
   notes: string | null;
   status: AccountStatus;
   activeListingCount: number;
-  sale: { netProfit: string; soldAt: string } | null;
+  sale: {
+    marketplace: string;
+    purchasePrice: string;
+    sellingPrice: string;
+    totalExpenses: string;
+    netProfit: string;
+    soldAt: string;
+  } | null;
 };
 
 export type AccountDetailDto = Omit<StockAccountDto, "sale"> & {

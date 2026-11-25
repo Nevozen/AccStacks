@@ -113,7 +113,7 @@ test("complete account trading lifecycle", async ({ page }) => {
   await page.goto("/stocks?category=sold");
   const soldCard = page.getByTestId("account-card").filter({ hasText: accountName });
   await expect(soldCard).toContainText("SOLD");
-  await expect(soldCard).toHaveClass(/bg-muted\/60/);
+  await expect(soldCard.getByRole("button", { name: "Account actions" })).toHaveCount(0);
   await soldCard.getByRole("button", { name: "View", exact: true }).click();
   const detailSheet = page.getByRole("dialog", { name: "Account details" });
   await expect(detailSheet).toContainText("Rp275.000");

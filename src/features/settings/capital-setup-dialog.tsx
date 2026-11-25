@@ -52,8 +52,8 @@ export function CapitalSetupDialog({ open }: { open: boolean }) {
         <DialogHeader>
           <DialogTitle>Set your starting capital</DialogTitle>
           <DialogDescription>
-            Enter the owner funding used to start this reseller business. This is required once for
-            cash, asset, and equity reporting. Zero is valid.
+            Start with the amount you put into the business. This is used to estimate cash and
+            equity. Zero is valid.
           </DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
@@ -66,9 +66,11 @@ export function CapitalSetupDialog({ open }: { open: boolean }) {
               disabled={pending}
               placeholder="1.000.000"
               autoFocus
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "starting-capital-error" : undefined}
             />
             {error ? (
-              <p className="text-xs text-destructive" role="alert">
+              <p id="starting-capital-error" className="text-xs text-destructive" role="alert">
                 {error}
               </p>
             ) : null}
