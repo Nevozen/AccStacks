@@ -130,10 +130,6 @@ export function LandingPage({ signedIn }: { signedIn: boolean }) {
           <HeroContours className={styles.contours} />
           <div className={`${styles.frame} ${styles.heroContent}`}>
             <div className={styles.heroCopy}>
-              <p className={styles.heroLabel}>
-                <span aria-hidden="true" />
-                The game account reseller workspace
-              </p>
               <h1 id="landing-title">
                 Stack accounts. <span>Know your profit.</span>
               </h1>

@@ -5,6 +5,9 @@ const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 if (!testDatabaseUrl || !new URL(testDatabaseUrl).pathname.endsWith("_test")) {
   throw new Error("TEST_DATABASE_URL must point to an isolated database ending in _test");
 }
+// Test workers import database fixtures outside the web server's environment.
+process.env.DATABASE_URL = testDatabaseUrl;
+
 const baseURL = "http://localhost:3100";
 
 export default defineConfig({
