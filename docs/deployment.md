@@ -17,6 +17,8 @@ The production Compose configuration:
 - Publishes the app only on `127.0.0.1:3000` for a reverse proxy.
 - Provides app and database health checks.
 
+When running the standalone server outside Docker, set `ACCSTACKS_UPLOAD_DIR` to an absolute, writable directory outside `public`. Use persistent storage for production thumbnails. The supplied Compose deployment already provides this at `/data/uploads` and needs no override.
+
 ## 1. Configure environment
 
 Copy `.env.example` to `.env` and set production values:

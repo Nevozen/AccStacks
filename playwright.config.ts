@@ -1,4 +1,5 @@
 import "dotenv/config";
+import path from "node:path";
 import { defineConfig } from "@playwright/test";
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
@@ -31,6 +32,7 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       DATABASE_URL: testDatabaseUrl,
+      ACCSTACKS_UPLOAD_DIR: path.join(import.meta.dirname, ".data", "test-uploads", "e2e"),
       AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-only-auth-secret-not-for-production-use",
       AUTH_URL: baseURL,
       PORT: "3100",
