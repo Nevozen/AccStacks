@@ -11,7 +11,7 @@ export function AuthShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-svh flex-col bg-background bg-[radial-gradient(ellipse_at_top,rgba(171,224,174,0.22),transparent_58%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(69,124,89,0.14),transparent_58%)]">
+    <div className="flex min-h-svh flex-col bg-background bg-[radial-gradient(ellipse_at_top,rgba(171,224,174,0.22),transparent_58%)]">
       <header className="mx-auto w-full max-w-6xl px-5 py-5 sm:px-8">
         <PublicBrand />
       </header>

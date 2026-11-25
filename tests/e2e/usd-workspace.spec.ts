@@ -62,10 +62,14 @@ test("records USD purchases, relistings, expenses, and losses to the cent", asyn
   await sale.getByLabel("Actual selling price").fill("19.99");
   await sale.getByRole("button", { name: "Add expense" }).click();
   await sale.getByLabel("Expense 1 description").fill("Marketplace fee");
+  const confirm = sale.getByRole("button", { name: "Confirm sale" });
+  await sale.getByLabel("Expense 1 amount").fill("0.251");
+  await confirm.click();
+  await expect(sale.getByRole("alert")).toContainText("up to two decimals");
   await sale.getByLabel("Expense 1 amount").fill("0.25");
   await expect(sale.getByText("-$0.36", { exact: true })).toBeVisible();
   await sale.getByRole("checkbox").check();
-  await sale.getByRole("button", { name: "Confirm sale" }).click();
+  await confirm.click();
   await expect(sale).toBeHidden();
   await page.goto("/overview");
   await expect(page.getByRole("region", { name: "Profit overview" })).toContainText("-$0.36");

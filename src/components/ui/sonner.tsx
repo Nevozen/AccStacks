@@ -1,23 +1,26 @@
 "use client";
 
-import { useTheme } from "next-themes";
-import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { AlertCircle, AlertTriangle, Check, Info, X } from "lucide-react";
+import { Toaster as Sonner } from "sonner";
 
-export function Toaster(props: ToasterProps) {
-  const { theme = "system" } = useTheme();
+export function Toaster() {
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      theme="light"
+      className="workspace-toaster"
       position="bottom-right"
+      mobileOffset={{ bottom: "max(12px, env(safe-area-inset-bottom))", left: 12, right: 12 }}
       closeButton
-      toastOptions={{
-        classNames: {
-          toast: "!rounded-lg !border !bg-popover !text-popover-foreground !shadow-lg",
-          description: "!text-muted-foreground",
-        },
+      icons={{
+        success: <Check aria-hidden="true" />,
+        error: <AlertCircle aria-hidden="true" />,
+        warning: <AlertTriangle aria-hidden="true" />,
+        info: <Info aria-hidden="true" />,
+        close: <X aria-hidden="true" />,
       }}
-      {...props}
+      toastOptions={{
+        closeButtonAriaLabel: "Dismiss notification",
+      }}
     />
   );
 }

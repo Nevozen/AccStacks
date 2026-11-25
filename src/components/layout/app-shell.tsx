@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { ThemeSwitcher } from "./theme-switcher";
 import { GlobalSearch } from "./global-search";
 import { BrandMark } from "./public-brand";
 
@@ -160,11 +159,9 @@ function AccountMenu({ user }: { user: { name: string; email: string } }) {
 
 function Sidebar({
   collapsed = false,
-  version,
   onNavigate,
 }: {
   collapsed?: boolean;
-  version: string;
   onNavigate?: () => void;
 }) {
   return (
@@ -208,12 +205,6 @@ function Sidebar({
           />
         </div>
       </nav>
-      <div className={cn("border-t px-2.5 py-2", collapsed && "flex justify-center")}>
-        <ThemeSwitcher collapsed={collapsed} />
-        {!collapsed ? (
-          <p className="px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground">v{version}</p>
-        ) : null}
-      </div>
     </>
   );
 }
@@ -221,11 +212,9 @@ function Sidebar({
 export function AppShell({
   children,
   user,
-  version,
 }: {
   children: React.ReactNode;
   user: { name: string; email: string };
-  version: string;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -245,7 +234,7 @@ export function AppShell({
             collapsed ? "w-16" : "w-52",
           )}
         >
-          <Sidebar collapsed={collapsed} version={version} />
+          <Sidebar collapsed={collapsed} />
         </aside>
         <div className="min-w-0 flex-1">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-card px-4 md:px-6">
@@ -293,7 +282,7 @@ export function AppShell({
       <SheetContent side="left" className="w-[min(85vw,18rem)] gap-0 p-0 lg:hidden">
         <SheetTitle className="sr-only">Application navigation</SheetTitle>
         <SheetDescription className="sr-only">Navigate between AccStacks modules</SheetDescription>
-        <Sidebar version={version} onNavigate={() => setMobileOpen(false)} />
+        <Sidebar onNavigate={() => setMobileOpen(false)} />
       </SheetContent>
     </Sheet>
   );

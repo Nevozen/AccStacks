@@ -35,14 +35,12 @@ describe("settings, search, and exports", () => {
     expect((await getSettings(user.id)).timezone).toBe("Asia/Jakarta");
     expect((await getSettings(user.id)).theme).toBe("LIGHT");
     const updated = await updateSettings(user.id, {
-      theme: "DARK",
       timezone: "UTC",
       preferredStockView: "TABLE",
     });
-    expect(updated).toMatchObject({ theme: "DARK", timezone: "UTC", preferredStockView: "TABLE" });
+    expect(updated).toMatchObject({ timezone: "UTC", preferredStockView: "TABLE" });
     await expect(
       updateSettings(user.id, {
-        theme: "LIGHT",
         timezone: "Invalid/Zone",
         preferredStockView: "GRID",
       }),

@@ -233,15 +233,32 @@ export function SaleConfirmationDialog({
                     <Controller
                       control={form.control}
                       name={`expenses.${index}.amount`}
-                      render={({ field: amountField }) => (
-                        <MoneyInput
-                          currency={currency}
-                          value={amountField.value}
-                          onChange={amountField.onChange}
-                          aria-label={`Expense ${index + 1} amount`}
-                          disabled={pending}
-                        />
-                      )}
+                      render={({ field: amountField, fieldState }) => {
+                        const errorId = `sale-expense-${field.id}-error`;
+                        return (
+                          <div>
+                            <MoneyInput
+                              currency={currency}
+                              ref={amountField.ref}
+                              value={amountField.value}
+                              onChange={amountField.onChange}
+                              aria-label={`Expense ${index + 1} amount`}
+                              aria-invalid={Boolean(fieldState.error)}
+                              aria-describedby={fieldState.error ? errorId : undefined}
+                              disabled={pending}
+                            />
+                            {fieldState.error ? (
+                              <p
+                                id={errorId}
+                                className="mt-1 text-xs text-destructive"
+                                role="alert"
+                              >
+                                {fieldState.error.message}
+                              </p>
+                            ) : null}
+                          </div>
+                        );
+                      }}
                     />
                     <Button
                       type="button"
@@ -322,7 +339,9 @@ export function SaleConfirmationDialog({
                 Cancel
               </Button>
               <Button type="submit" form="sale-form" disabled={pending}>
-                {pending ? <Loader2 className="animate-spin" /> : null}
+                {pending ? (
+                  <Loader2 className="motion-safe:animate-spin" aria-hidden="true" />
+                ) : null}
                 Confirm sale
               </Button>
             </DialogFooter>

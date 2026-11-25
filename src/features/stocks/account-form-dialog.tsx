@@ -125,8 +125,8 @@ export function AccountFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={(value) => !pending && closeDialog(value)}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex max-w-2xl flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 px-4 pt-4 pr-12 pb-3 sm:px-5 sm:pt-5 sm:pr-12">
           <DialogTitle>{account ? "Edit account" : "Add account"}</DialogTitle>
           <DialogDescription>
             Track purchase details only. Never store passwords, recovery codes, or session tokens.
@@ -134,7 +134,7 @@ export function AccountFormDialog({
         </DialogHeader>
         <form
           id="account-form"
-          className="grid gap-grid sm:grid-cols-2"
+          className="grid min-h-0 gap-x-grid gap-y-3 overflow-y-auto overscroll-contain px-4 pt-1 pb-4 sm:grid-cols-2 sm:px-5"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <Field label="Game name" error={errors.gameName?.message} required>
@@ -183,15 +183,17 @@ export function AccountFormDialog({
               aria-invalid={Boolean(errors.purchaseDate)}
             />
           </Field>
-          <Field label="Purchased from" error={errors.purchasedFrom?.message}>
-            <Input
-              {...form.register("purchasedFrom")}
-              placeholder="Seller or source"
-              disabled={pending}
-            />
-          </Field>
-          <div className="space-y-1.5">
-            <Label htmlFor="account-image-file">Account thumbnail</Label>
+          <div className="sm:col-span-2">
+            <Field label="Purchased from" error={errors.purchasedFrom?.message}>
+              <Input
+                {...form.register("purchasedFrom")}
+                placeholder="Seller or source"
+                disabled={pending}
+              />
+            </Field>
+          </div>
+          <fieldset className="min-w-0 space-y-1.5 sm:col-span-2">
+            <legend className="text-sm font-medium">Account thumbnail</legend>
             <LocalImageInput
               existingUrl={account?.imageUrl ?? null}
               disabled={pending}
@@ -204,27 +206,29 @@ export function AccountFormDialog({
             {errors.imageUrl ? (
               <p className="text-xs text-destructive">{errors.imageUrl.message}</p>
             ) : null}
-          </div>
-          <div className="sm:col-span-2">
+          </fieldset>
+          <div>
             <Field label="Description" error={errors.description?.message}>
               <Textarea
                 {...form.register("description")}
                 placeholder="Account rank, collection, or other non-sensitive details"
+                className="min-h-16"
                 disabled={pending}
               />
             </Field>
           </div>
-          <div className="sm:col-span-2">
+          <div>
             <Field label="Internal notes" error={errors.notes?.message}>
               <Textarea
                 {...form.register("notes")}
                 placeholder="Private business notes"
+                className="min-h-16"
                 disabled={pending}
               />
             </Field>
           </div>
         </form>
-        <DialogFooter>
+        <DialogFooter className="shrink-0 flex-row justify-end border-t px-4 py-3 sm:px-5">
           <Button
             type="button"
             variant="outline"

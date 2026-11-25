@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { moneyToDecimal } from "@/lib/money";
 import { getWorkspace } from "@/server/workspace";
+import packageJson from "../../../../package.json";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -19,7 +20,6 @@ export default async function SettingsPage() {
         <SettingsForm
           currency={currency}
           defaultValues={{
-            theme: settings.theme,
             timezone: settings.timezone,
             preferredStockView: settings.preferredStockView,
             capital: moneyToDecimal(settings.capital ?? 0n, currency),
@@ -38,6 +38,10 @@ export default async function SettingsPage() {
               <div>
                 <dt className="text-xs text-muted-foreground">Email</dt>
                 <dd className="mt-0.5 font-medium wrap-anywhere">{user.email}</dd>
+              </div>
+              <div className="border-t pt-3">
+                <dt className="text-xs text-muted-foreground">App version</dt>
+                <dd className="mt-0.5 font-mono text-xs">v{packageJson.version}</dd>
               </div>
             </dl>
           </CardContent>

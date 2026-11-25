@@ -4,7 +4,6 @@ import type { Currency } from "@/lib/money";
 import { moneyInputSchema } from "./money";
 
 const settingsFields = z.object({
-  theme: z.enum(["LIGHT", "DARK", "SYSTEM"]),
   timezone: z
     .string()
     .trim()

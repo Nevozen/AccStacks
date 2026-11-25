@@ -42,7 +42,7 @@ export function AnalyticsWorkspace(props: ReportProps) {
           </>
         }
       />
-      <div className="grid gap-grid md:grid-cols-12">
+      <div className="report-grid grid gap-grid md:grid-cols-12">
         <ReportPanel
           id="profit-and-loss"
           title="Profit and loss"

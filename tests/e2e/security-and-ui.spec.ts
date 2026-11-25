@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import packageJson from "../../package.json" with { type: "json" };
 import { testDb } from "../integration/client";
 import { createAccountAndListingFixture, createE2eOwner, signIn } from "./helpers";
 
@@ -28,8 +29,12 @@ test("redirects unauthenticated users and protects private APIs", async ({ page,
   expect((await request.get("/api/search/accounts?q=test")).status()).toBe(401);
 });
 
-test("shows validation errors and supports themes and mobile navigation", async ({ page }) => {
+test("shows validation errors, stays light, and puts the version only in Settings", async ({
+  page,
+}) => {
   const owner = await createE2eOwner();
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page.addInitScript(() => localStorage.setItem("accstacks-theme", "dark"));
   await signIn(page, owner);
   await page.goto("/stocks?add=1");
   const dialog = page.getByRole("dialog", { name: "Add account" });
@@ -38,13 +43,13 @@ test("shows validation errors and supports themes and mobile navigation", async 
   await expect(dialog.getByText("Account name is required")).toBeVisible();
   await dialog.getByRole("button", { name: "Cancel" }).click();
 
-  await expect(page.locator("html")).not.toHaveClass(/dark/);
-  await page.getByRole("button", { name: "Theme", exact: true }).click();
-  await page.getByRole("menuitem", { name: "Dark", exact: true }).click();
-  await expect(page.locator("html")).toHaveClass(/dark/);
-  await page.getByRole("button", { name: "Theme", exact: true }).click();
-  await page.getByRole("menuitem", { name: "Light", exact: true }).click();
-  await expect(page.locator("html")).not.toHaveClass(/dark/);
+  await expect(page.locator("html")).toHaveCSS("color-scheme", "light");
+  await expect(page.getByRole("button", { name: "Theme", exact: true })).toHaveCount(0);
+  const version = page.getByText(`v${packageJson.version}`, { exact: true });
+  await expect(version).toHaveCount(0);
+  await page.goto("/settings");
+  await expect(version).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Theme" })).toHaveCount(0);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Open navigation" }).click();

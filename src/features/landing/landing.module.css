@@ -17,15 +17,6 @@
   color: var(--ink);
 }
 
-:global(.dark) .landing {
-  --grid: #223126;
-  --haze: #1f3426;
-  --wave-back: #274632;
-  --wave-front: #2f503e;
-  --wave-line: #537f60;
-  --preview-shadow: #060d0870;
-}
-
 .frame {
   width: min(100% - 2.5rem, 72rem);
   margin-inline: auto;
@@ -401,19 +392,51 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .heroCopy,
+  .heroCopy > *,
   .preview {
-    animation: arrive 550ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation: arrive 650ms var(--ease-enter) both;
+  }
+
+  .heroDescription {
+    animation-delay: 65ms;
+  }
+
+  .heroActions {
+    animation-delay: 130ms;
   }
 
   .preview {
-    animation-delay: 100ms;
+    animation-delay: 205ms;
+  }
+
+  @supports (animation-timeline: view()) {
+    .contours {
+      animation: contour-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 480px;
+    }
+
+    .steps li,
+    .featureList li {
+      animation: arrive linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 48%;
+    }
+  }
+}
+
+@keyframes contour-drift {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 42px;
   }
 }
 
 @keyframes arrive {
   from {
-    opacity: 0;
+    opacity: 0.65;
     transform: translateY(12px);
   }
 

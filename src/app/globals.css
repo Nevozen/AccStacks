@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
   --brand-paper: #fff;
   --brand-ink: #16241c;
@@ -51,32 +49,7 @@
   --equity-negative: #ffc0ba;
   --surface-shadow: 0 1px 2px #16241c08;
   --overlay-shadow: 0 8px 24px #16241c1c, 0 2px 6px #16241c0d;
-}
-
-.dark {
-  --brand-paper: #141b17;
-  --brand-ink: #edf6ef;
-  --brand-muted: #aabeaf;
-  --brand-line: #32443a;
-  --brand-surface: #1c2820;
-  --brand-green: #a1ddb0;
-  --brand-wash: #243a2b;
-  --brand-mark: oklch(0.93 0.003 286.32);
-  --brand-mark-foreground: oklch(0.2 0.006 285.885);
-
-  --background: #101712;
-  --popover: var(--brand-surface);
-  --secondary: var(--brand-surface);
-  --muted: var(--brand-surface);
-  --destructive: #ff9e9f;
-  --destructive-foreground: #32151a;
-  --info: #b3d1c5;
-  --warning: #f2bf7c;
-  --input: #465d4e;
-  --chart-2: #c0dc79;
-  --chart-3: #809d8b;
-  --surface-shadow: 0 1px 2px #0002;
-  --overlay-shadow: 0 8px 24px #0006, 0 2px 6px #0003;
+  --ease-enter: cubic-bezier(0.18, 0.72, 0.24, 1);
 }
 
 @theme inline {
@@ -142,10 +115,6 @@
     color-scheme: light;
   }
 
-  html.dark {
-    color-scheme: dark;
-  }
-
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-geist-sans), Arial, sans-serif;
@@ -159,6 +128,106 @@
   button:disabled,
   [role="button"][aria-disabled="true"] {
     @apply cursor-not-allowed;
+  }
+}
+
+.workspace-toaster[data-sonner-toaster] {
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+.workspace-toaster [data-sonner-toast][data-styled="true"] {
+  --normal-bg: var(--card);
+  --normal-border: var(--input);
+  --normal-text: var(--foreground);
+  --border-radius: var(--radius);
+  --toast-tone: var(--info);
+  gap: 0.75rem;
+  padding: 0.75rem 2.75rem 0.75rem 0.75rem;
+  box-shadow: var(--overlay-shadow);
+}
+
+.workspace-toaster [data-sonner-toast][data-type="success"] {
+  --toast-tone: var(--success);
+}
+
+.workspace-toaster [data-sonner-toast][data-type="warning"] {
+  --toast-tone: var(--warning);
+}
+
+.workspace-toaster [data-sonner-toast][data-type="error"] {
+  --toast-tone: var(--destructive);
+}
+
+.workspace-toaster [data-sonner-toast][data-styled="true"] :is([data-icon], [data-close-button]) {
+  display: grid;
+  width: 1.875rem;
+  height: 1.875rem;
+  place-items: center;
+}
+
+.workspace-toaster [data-sonner-toast][data-styled="true"] [data-icon] {
+  margin: 0;
+  border-radius: 0.5rem;
+  color: var(--toast-tone);
+  background: color-mix(in srgb, var(--toast-tone) 12%, var(--card));
+}
+
+.workspace-toaster
+  [data-sonner-toast][data-styled="true"]
+  :is([data-icon], [data-close-button])
+  svg {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+}
+
+.workspace-toaster [data-sonner-toast][data-styled="true"] [data-close-button] {
+  top: 0.625rem;
+  right: 0.625rem;
+  left: auto;
+  transform: none;
+  border-color: transparent;
+  border-radius: 0.5rem;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.workspace-toaster [data-sonner-toast][data-styled="true"] [data-close-button]:hover {
+  border-color: transparent;
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.workspace-toaster [data-sonner-toast][data-styled="true"] :is([data-title], [data-description]) {
+  line-height: 1.4;
+}
+
+.workspace-toaster [data-sonner-toast][data-styled="true"] [data-title] {
+  font-weight: 600;
+}
+
+.workspace-toaster [data-sonner-toast][data-styled="true"] [data-description] {
+  color: var(--muted-foreground);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .report-grid > * {
+    animation: report-arrive 430ms var(--ease-enter) backwards;
+  }
+
+  .report-grid > :nth-child(2) {
+    animation-delay: 45ms;
+  }
+
+  .report-grid > :nth-child(n + 3) {
+    animation-delay: 90ms;
+  }
+}
+
+@keyframes report-arrive {
+  from {
+    opacity: 0.7;
+    translate: 0 7px;
   }
 }
 

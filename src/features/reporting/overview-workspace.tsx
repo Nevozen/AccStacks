@@ -31,7 +31,7 @@ export function OverviewWorkspace(props: ReportProps) {
           </>
         }
       />
-      <div className="grid gap-grid md:grid-cols-12">
+      <div className="report-grid grid gap-grid md:grid-cols-12">
         <FinancialPosition
           {...data.capitalPosition}
           currency={currency}

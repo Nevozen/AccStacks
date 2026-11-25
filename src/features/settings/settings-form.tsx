@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -41,12 +40,10 @@ export function SettingsForm({
   currency: Currency;
 }) {
   const router = useRouter();
-  const { setTheme } = useTheme();
   const form = useForm<SettingsInput>({
     resolver: zodResolver(settingsInputSchema(currency)),
     defaultValues,
   });
-  const theme = useWatch({ control: form.control, name: "theme" });
   const timezone = useWatch({ control: form.control, name: "timezone" });
   const stockView = useWatch({ control: form.control, name: "preferredStockView" });
   const pending = form.formState.isSubmitting;
@@ -70,25 +67,6 @@ export function SettingsForm({
           <h2 className="text-[15px] font-semibold">Workspace preferences</h2>
         </CardHeader>
         <CardContent className="grid gap-grid sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="workspace-theme">Theme</Label>
-            <Select
-              value={theme}
-              onValueChange={(value: SettingsInput["theme"]) => {
-                form.setValue("theme", value, { shouldDirty: true });
-                setTheme(value.toLowerCase());
-              }}
-            >
-              <SelectTrigger id="workspace-theme" disabled={pending}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="SYSTEM">System preference</SelectItem>
-                <SelectItem value="LIGHT">Light</SelectItem>
-                <SelectItem value="DARK">Dark</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-1.5">
             <Label htmlFor="workspace-timezone">Timezone</Label>
             <Select
@@ -131,7 +109,7 @@ export function SettingsForm({
               </SelectContent>
             </Select>
           </div>
-          <dl>
+          <dl className="sm:col-span-2">
             <dt className="text-sm font-medium">Currency</dt>
             <dd className="mt-1.5 rounded-md border p-2">
               <CurrencyIdentity currency={currency} />

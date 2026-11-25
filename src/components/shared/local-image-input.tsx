@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Trash2, Upload } from "lucide-react";
 import { AccountThumbnail } from "./account-thumbnail";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MAX_IMAGE_BYTES } from "@/lib/image-files";
 
 export function LocalImageInput({
@@ -19,7 +18,9 @@ export function LocalImageInput({
   onRemove: () => void;
 }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(existingUrl);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   function selectFile(file: File | undefined) {
     setError(null);
@@ -35,57 +36,74 @@ export function LocalImageInput({
     const reader = new FileReader();
     reader.onload = () => setPreviewUrl(String(reader.result));
     reader.readAsDataURL(file);
+    setFileName(file.name);
     onFile(file);
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-dashed p-3">
-      <div className="flex items-center gap-3">
+    <div className="rounded-lg border border-dashed bg-muted/30 p-3">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
         <AccountThumbnail
           key={previewUrl ?? "empty"}
           src={previewUrl}
           alt="Account thumbnail preview"
-          className="size-16"
+          className="size-11"
         />
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium">JPEG, PNG, or WebP · Maximum 3 MB</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Stored privately and only accessible to your workspace.
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium" title={fileName ?? undefined}>
+            {fileName ?? (previewUrl ? "Current picture" : "No picture selected")}
+          </p>
+          <p id="account-image-help" className="mt-0.5 text-xs text-muted-foreground">
+            Private image. JPEG, PNG, or WebP up to 3 MB.
           </p>
         </div>
-        {previewUrl ? (
+        <div className="col-start-2 flex flex-wrap items-center gap-2 sm:col-start-auto">
           <Button
             type="button"
-            variant="ghost"
-            size="icon-sm"
+            variant="outline"
+            size="sm"
             disabled={disabled}
-            onClick={() => {
-              setPreviewUrl(null);
-              onFile(null);
-              onRemove();
-            }}
+            aria-describedby={error ? "account-image-error" : "account-image-help"}
+            onClick={() => fileInput.current?.click()}
           >
-            <Trash2 />
-            <span className="sr-only">Remove thumbnail</span>
+            <Upload aria-hidden="true" />
+            {previewUrl ? "Replace picture" : "Choose picture"}
           </Button>
-        ) : null}
+          {previewUrl ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              disabled={disabled}
+              onClick={() => {
+                setPreviewUrl(null);
+                setFileName(null);
+                setError(null);
+                onFile(null);
+                onRemove();
+              }}
+            >
+              <Trash2 aria-hidden="true" />
+              <span className="sr-only">Remove thumbnail</span>
+            </Button>
+          ) : null}
+        </div>
       </div>
-      <Input
+      <input
         id="account-image-file"
+        ref={fileInput}
         type="file"
         accept="image/jpeg,image/png,image/webp"
         disabled={disabled}
-        onChange={(event) => selectFile(event.target.files?.[0])}
-        className="h-auto py-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2.5 file:py-1.5 file:text-xs file:font-medium"
+        aria-label="Account thumbnail file"
+        onChange={(event) => {
+          selectFile(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+        hidden
       />
-      <Button type="button" variant="outline" size="sm" asChild disabled={disabled}>
-        <label htmlFor="account-image-file">
-          <Upload />
-          Choose picture
-        </label>
-      </Button>
       {error ? (
-        <p className="text-xs text-destructive" role="alert">
+        <p id="account-image-error" className="mt-2 text-xs text-destructive" role="alert">
           {error}
         </p>
       ) : null}

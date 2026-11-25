@@ -19,7 +19,11 @@ test("complete account trading lifecycle", async ({ page }) => {
   await accountDialog.getByLabel("Account name").fill(accountName);
   await accountDialog.getByLabel("Purchase price").fill("500000");
   await accountDialog.getByLabel("Description").fill("E2E inventory account");
-  await accountDialog.locator("#account-image-file").setInputFiles({
+  const choosingFile = page.waitForEvent("filechooser");
+  await accountDialog.getByRole("button", { name: "Choose picture" }).click();
+  await (
+    await choosingFile
+  ).setFiles({
     name: "pixel.png",
     mimeType: "image/png",
     buffer: Buffer.from(
@@ -27,6 +31,7 @@ test("complete account trading lifecycle", async ({ page }) => {
       "base64",
     ),
   });
+  await expect(accountDialog.getByRole("button", { name: "Replace picture" })).toBeVisible();
   await accountDialog.getByRole("button", { name: "Add account", exact: true }).click();
   await expect(accountDialog).toBeHidden();
   const availableCard = page.getByTestId("account-card").filter({ hasText: accountName });
