@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import {
+  ChartNoAxesCombined,
   ChevronDown,
   LayoutDashboard,
   LogOut,
@@ -39,9 +40,20 @@ import { GlobalSearch } from "./global-search";
 import { BrandMark } from "./public-brand";
 
 const navigation = [
-  { href: "/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/stocks", label: "Stocks", icon: Package },
-  { href: "/listings", label: "Listings", icon: Store },
+  {
+    label: "Business",
+    links: [
+      { href: "/overview", label: "Overview", icon: LayoutDashboard },
+      { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
+    ],
+  },
+  {
+    label: "Inventory",
+    links: [
+      { href: "/stocks", label: "Stocks", icon: Package },
+      { href: "/listings", label: "Listings", icon: Store },
+    ],
+  },
 ] as const;
 
 function WorkspaceBrand({
@@ -166,16 +178,25 @@ function Sidebar({
         className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2.5 py-3"
         aria-label="Primary navigation"
       >
-        <p
-          className={cn(
-            "px-2.5 pb-1 font-mono text-[11px] font-medium tracking-wide text-muted-foreground uppercase",
-            collapsed && "sr-only",
-          )}
-        >
-          Workspace
-        </p>
-        {navigation.map((item) => (
-          <NavigationLink key={item.href} {...item} collapsed={collapsed} onClick={onNavigate} />
+        {navigation.map(({ label, links }) => (
+          <div className="mb-4 space-y-1" key={label}>
+            <p
+              className={cn(
+                "px-2.5 pb-1 font-mono text-[11px] font-medium tracking-wide text-muted-foreground uppercase",
+                collapsed && "sr-only",
+              )}
+            >
+              {label}
+            </p>
+            {links.map((item) => (
+              <NavigationLink
+                key={item.href}
+                {...item}
+                collapsed={collapsed}
+                onClick={onNavigate}
+              />
+            ))}
+          </div>
         ))}
         <div className="mt-auto pt-4">
           <NavigationLink

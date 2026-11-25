@@ -26,16 +26,22 @@ AccStacks is an internal business management tool, not a public marketplace. It 
 
 ### Overview
 
-A centralized dashboard for monitoring inventory and business performance.
+A compact business snapshot that separates today's position from completed sales in the selected reporting period.
 
 - Total, available, listed, and sold accounts.
 - Active marketplace listings and current inventory value.
-- Total revenue, cost of goods sold, additional expenses, and net profit.
-- Previous-period revenue, profit, and sale-count comparison indicators.
-- Required owner capital with estimated cash, assets, retained profit, and equity reporting.
-- Profit margin and sales performance over time.
-- Recent transactions and performance by game and marketplace.
-- Date range filters for financial analytics.
+- Owner capital, retained profit, estimated cash, and estimated equity.
+- Realized net profit, total revenue, margin, and comparison with the prior period when a baseline exists.
+- A compact sales chart, top games, sale averages, and recent transactions linked to Sold Accounts.
+
+### Analytics
+
+Use the same reporting periods to investigate what drove sales results.
+
+- Cost of goods sold, additional expenses, ROI, and previous-period comparisons.
+- Monthly sales, detailed game profitability, and marketplace revenue.
+- Current estimated unrealized profit and inventory holding age, independent of the sales period.
+- CSV exports of the selected financial period or all completed sales.
 
 ### Stocks
 

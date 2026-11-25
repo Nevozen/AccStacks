@@ -55,8 +55,13 @@ Estimated Assets = Estimated Cash + Current Inventory Value
 
 Inventory is an asset, not equity by itself. The simplified model assumes no liabilities, owner withdrawals, or non-cash adjustments. Estimated assets and equity therefore reconcile to the same total, while the cash and inventory breakdown explains where that value sits. Capital and retained profit are not affected by the selected sales reporting period.
 
-Revenue, net profit, and sale-count indicators compare the current reporting period with the immediately preceding equivalent period. Last 7/30 days and custom ranges use the same duration; calendar months/years use the previous calendar month/year. All-time reports do not show a comparison. A zero previous value displays `New` rather than an infinite percentage.
+Revenue, net profit, and sale-count indicators compare the current reporting period with the immediately preceding equivalent period. Last 7/30 days and custom ranges use the same duration; calendar months/years use the previous calendar month/year. All-time reports do not show a comparison. If the previous value is zero, reports do not show a growth percentage.
 
 ## Dates
 
-Timestamps are stored in UTC. Date-only inputs and reporting boundaries are interpreted in the configured user timezone, default `Asia/Jakarta`. The current reporting period applies only to sales-related metrics and charts.
+Timestamps are stored in UTC. Current reporting boundaries and displayed dates use the configured user timezone, default `Asia/Jakarta`. The reporting period applies only to sales-related metrics and charts.
+
+### Existing timezone limitations
+
+- Purchase, listing, and sale date writes still interpret date-only input at midnight in `Asia/Jakarta`, even if a different display or reporting timezone is selected.
+- Calendar-month and calendar-year comparisons shift the prior boundary in the server timezone. A timezone offset change in the reporting timezone can move the comparison cutoff. For example, on a UTC server, an April report in `America/New_York` begins its March comparison at 04:00 UTC instead of 05:00 UTC.

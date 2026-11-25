@@ -12,6 +12,7 @@ function revalidateInventory() {
   revalidatePath("/stocks");
   revalidatePath("/listings");
   revalidatePath("/overview");
+  revalidatePath("/analytics");
 }
 
 export async function createAccountAction(input: AccountInput): Promise<ActionResult> {

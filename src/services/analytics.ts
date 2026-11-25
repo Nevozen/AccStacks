@@ -22,6 +22,7 @@ export async function getAnalytics(
   query: OverviewQuery,
   timezone: string,
   now: DateTime = DateTime.now(),
+  view: "full" | "overview" | "analytics" = "full",
 ) {
   const parsed = overviewQuerySchema.parse(query);
   const range = resolveDateRange({ ...parsed, timezone, now });
@@ -53,6 +54,8 @@ export async function getAnalytics(
         range.toExclusive.getTime() - range.from.getTime() <= 62 * 24 * 60 * 60 * 1000,
       ));
   const periodFormat = daily ? "YYYY-MM-DD" : "YYYY-MM";
+  const detailLimit = view === "analytics" ? Prisma.empty : Prisma.sql`LIMIT 8`;
+  const gameLimit = view === "overview" ? Prisma.sql`LIMIT 4` : detailLimit;
   const inventoryValueQuery = db.$queryRaw<{ inventoryValue: bigint; unrealizedProfit: bigint }[]>`
     SELECT
       COALESCE(SUM(a."purchasePrice"), 0)::bigint AS "inventoryValue",
@@ -96,28 +99,35 @@ export async function getAnalytics(
         COALESCE(SUM(s."netProfit"), 0)::bigint AS "netProfit"
         ${salesFrom} GROUP BY period ORDER BY period ASC`,
     ),
-    db.$queryRaw<{ period: string; sales: bigint; revenue: bigint; netProfit: bigint }[]>(
-      Prisma.sql`SELECT TO_CHAR(s."soldAt" AT TIME ZONE ${timezone}, 'YYYY-MM') AS period,
+    view === "overview"
+      ? Promise.resolve([])
+      : db.$queryRaw<{ period: string; sales: bigint; revenue: bigint; netProfit: bigint }[]>(
+          Prisma.sql`SELECT TO_CHAR(s."soldAt" AT TIME ZONE ${timezone}, 'YYYY-MM') AS period,
         COUNT(*)::bigint AS sales,
         COALESCE(SUM(s."sellingPrice"), 0)::bigint AS revenue,
         COALESCE(SUM(s."netProfit"), 0)::bigint AS "netProfit"
         ${salesFrom} GROUP BY period ORDER BY period ASC`,
-    ),
+        ),
     db.$queryRaw<{ name: string; sales: bigint; revenue: bigint; netProfit: bigint }[]>(
       Prisma.sql`SELECT MAX(a."gameName") AS name,
         COUNT(*)::bigint AS sales,
         COALESCE(SUM(s."sellingPrice"), 0)::bigint AS revenue,
         COALESCE(SUM(s."netProfit"), 0)::bigint AS "netProfit"
-        ${salesFrom} GROUP BY a."gameNameNormalized" ORDER BY "netProfit" DESC LIMIT 8`,
+        ${salesFrom} GROUP BY a."gameNameNormalized" ORDER BY "netProfit" DESC, name ASC
+        ${gameLimit}`,
     ),
-    db.$queryRaw<{ name: string; sales: bigint; revenue: bigint; netProfit: bigint }[]>(
-      Prisma.sql`SELECT MAX(s.marketplace) AS name,
+    view === "overview"
+      ? Promise.resolve([])
+      : db.$queryRaw<{ name: string; sales: bigint; revenue: bigint; netProfit: bigint }[]>(
+          Prisma.sql`SELECT MAX(s.marketplace) AS name,
         COUNT(*)::bigint AS sales,
         COALESCE(SUM(s."sellingPrice"), 0)::bigint AS revenue,
         COALESCE(SUM(s."netProfit"), 0)::bigint AS "netProfit"
-        ${salesFrom} GROUP BY s."marketplaceNormalized" ORDER BY revenue DESC LIMIT 8`,
-    ),
-    db.$queryRaw<{ name: string; averageDays: number }[]>`
+        ${salesFrom} GROUP BY s."marketplaceNormalized" ORDER BY revenue DESC, name ASC ${detailLimit}`,
+        ),
+    view === "overview"
+      ? Promise.resolve([])
+      : db.$queryRaw<{ name: string; averageDays: number }[]>`
       SELECT MAX(a."gameName") AS name,
         AVG(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - a."purchaseDate")) / 86400)::float AS "averageDays"
       FROM "Account" a
@@ -125,8 +135,8 @@ export async function getAnalytics(
         AND a."deletedAt" IS NULL
         AND NOT EXISTS (SELECT 1 FROM "Sale" s WHERE s."accountId" = a.id)
       GROUP BY a."gameNameNormalized"
-      ORDER BY "averageDays" DESC
-      LIMIT 8
+      ORDER BY "averageDays" DESC, name ASC
+      ${detailLimit}
     `,
     db.account.count({ where: { ownerId, deletedAt: null } }),
     db.account.count({
@@ -139,15 +149,16 @@ export async function getAnalytics(
     db.listing.count({
       where: { status: "ACTIVE", account: { ownerId, deletedAt: null, sale: null } },
     }),
-    db.sale.findMany({
-      where: saleDateWhere,
-      include: {
-        account: { select: { id: true, accountName: true, gameName: true, imageUrl: true } },
-        expenses: { select: { amount: true } },
-      },
-      orderBy: { soldAt: "desc" },
-      take: 8,
-    }),
+    view === "analytics"
+      ? Promise.resolve([])
+      : db.sale.findMany({
+          where: saleDateWhere,
+          include: {
+            account: { select: { id: true, accountCode: true, accountName: true, gameName: true } },
+          },
+          orderBy: [{ soldAt: "desc" }, { id: "desc" }],
+          take: view === "overview" ? 5 : 8,
+        }),
   ]);
 
   const [previousFinancialRows, allTimeFinancialRows, settings] = await Promise.all([
@@ -209,6 +220,11 @@ export async function getAnalytics(
       revenue: calculateChange(financial.revenue, previous.revenue),
       netProfit: calculateChange(netProfit, previousNetProfit),
       sales: calculateChange(financial.sales, previous.sales),
+      hasBaseline: {
+        revenue: previous.revenue !== 0n,
+        netProfit: previousNetProfit !== 0n,
+        sales: previous.sales !== 0n,
+      },
     },
     capitalPosition: {
       capital: settings?.capital ?? 0n,

@@ -12,6 +12,7 @@ export async function updateCapitalAction(capital: string): Promise<ActionResult
     await updateCapital(user.id, capital);
     revalidatePath("/settings");
     revalidatePath("/overview");
+    revalidatePath("/analytics");
     return { success: true, message: "Starting capital saved" };
   } catch (error) {
     return actionError(error, "Unable to save capital");
@@ -25,6 +26,7 @@ export async function updateSettingsAction(input: SettingsInput): Promise<Action
     revalidatePath("/settings");
     revalidatePath("/stocks");
     revalidatePath("/overview");
+    revalidatePath("/analytics");
     revalidatePath("/listings");
     return { success: true, message: "Workspace settings saved" };
   } catch (error) {

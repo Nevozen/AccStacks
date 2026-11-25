@@ -13,6 +13,7 @@ export async function confirmSaleAction(input: SaleInput): Promise<ActionResult>
     revalidatePath("/stocks");
     revalidatePath("/listings");
     revalidatePath("/overview");
+    revalidatePath("/analytics");
     return {
       success: true,
       message: "Sale recorded. Remove any remaining external advertisements manually.",

@@ -21,6 +21,8 @@ test("redirects unauthenticated users and protects private APIs", async ({ page,
   await page.goto("/stocks");
   await expect(page).toHaveURL(/\/login/);
   await expect(page.getByRole("heading", { name: "Sign in to AccStacks" })).toBeVisible();
+  await page.goto("/analytics");
+  await expect(page).toHaveURL(/\/login\?callbackUrl=%2Fanalytics/);
   expect((await request.get("/api/export/accounts")).status()).toBe(401);
   expect((await request.get("/api/accounts/eligible")).status()).toBe(401);
   expect((await request.get("/api/search/accounts?q=test")).status()).toBe(401);

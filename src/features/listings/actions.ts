@@ -10,6 +10,7 @@ function revalidateListings() {
   revalidatePath("/stocks");
   revalidatePath("/listings");
   revalidatePath("/overview");
+  revalidatePath("/analytics");
 }
 
 export async function createListingAction(input: ListingInput): Promise<ActionResult> {
